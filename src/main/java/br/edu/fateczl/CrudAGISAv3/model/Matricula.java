@@ -28,7 +28,7 @@ import lombok.Setter;
 @Table (name ="matricula")
 @Inheritance(strategy = InheritanceType.JOINED)
 
-@NamedNativeQuery(name = "Matricula.findAll", query = "SELECT * FROM v_listar_disciplinas", resultClass = Matricula.class)
+@NamedNativeQuery(name = "Matricula.findAllBuscarMatricula", query = "SELECT * FROM fn_buscar_matricula(?1)", resultClass = Matricula.class)
 
 @NamedStoredProcedureQuery(name = "Matricula.sp_iud_disciplina", procedureName = "sp_iud_disciplina ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),
@@ -50,7 +50,7 @@ public class Matricula {
 	
 	@ManyToOne(targetEntity = Aluno.class, fetch = FetchType.LAZY)
 	@JoinColumn(name = "codigoAluno", nullable = false)	
-	private String codigoAluno;
+	private Aluno codigoAluno;
 	
 	@Column(name = "dataMatricula", nullable = false)
 	private Date dataMatricula;

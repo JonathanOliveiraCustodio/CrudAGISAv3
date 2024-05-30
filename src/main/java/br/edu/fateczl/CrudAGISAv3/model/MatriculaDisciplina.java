@@ -29,12 +29,12 @@ public class MatriculaDisciplina {
 	@Id
 	@ManyToOne(cascade = CascadeType.ALL, targetEntity = Matricula.class, fetch = FetchType.LAZY)
 	@JoinColumn(name = "codigoMatricula", nullable = false)
-	private int codigoMatricula;
+	private Matricula codigoMatricula;
 	
 	@Id
 	@ManyToOne(cascade = CascadeType.ALL, targetEntity = Disciplina.class, fetch = FetchType.LAZY)
 	@JoinColumn(name = "codigoDisciplina",  nullable = false)
-	private int codigoDisciplina;
+	private Disciplina codigoDisciplina;
 	
 	@Column(name = "situacao", length = 20,  nullable = false)
 	private String situacao;
