@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Eliminacao;
@@ -20,7 +19,7 @@ import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.ICursoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IEliminacaoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IMatriculaRepository;
-import br.edu.fateczl.CrudAGISAv3.repository.ISolicitarEliminacaoRepository;
+
 
 @Controller
 public class SolicitarEliminacaoController {
@@ -37,8 +36,6 @@ public class SolicitarEliminacaoController {
 	@Autowired
 	IMatriculaRepository mRep;
 
-	@Autowired
-	ISolicitarEliminacaoRepository slRep;
 
 	@RequestMapping(name = "solicitarEliminacao", value = "/solicitarEliminacao", method = RequestMethod.GET)
 	public ModelAndView analisarEliminacaoGet(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
@@ -50,9 +47,9 @@ public class SolicitarEliminacaoController {
 	public ModelAndView analisarEliminacaoPost(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
 
 		String cmd = allRequestParam.get("botao");
-		String codigo = allRequestParam.get("codigo");
-		String codigoMatricula = allRequestParam.get("codigoMatricula");
-		String codigoDisciplina = allRequestParam.get("codigoDisciplina");
+	//	String codigo = allRequestParam.get("codigo");
+	//	String codigoMatricula = allRequestParam.get("codigoMatricula");
+	//	String codigoDisciplina = allRequestParam.get("codigoDisciplina");
 
 		String nomeInstituicao = allRequestParam.get("nomeInstituicao");
 
@@ -131,7 +128,7 @@ public class SolicitarEliminacaoController {
 	}
 
 	private String cadastrarEliminacao(Eliminacao e) throws SQLException, ClassNotFoundException {
-		String saida = slRep.sp_inserir_eliminacao(e.getCodigoMatricula(), e.getCodigoDisciplina(),
+		String saida = eRep.sp_inserir_eliminacao(e.getCodigoMatricula(), e.getCodigoDisciplina(),
 				e.getNomeInstituicao());
 		return saida;
 	}
@@ -143,12 +140,12 @@ public class SolicitarEliminacaoController {
 	}
 
 	private List<Eliminacao> listarEliminacoes(int RA) throws SQLException, ClassNotFoundException {
-		List<Eliminacao> eliminacoes = slRep.findAllEliminacoesRA(RA);
+		List<Eliminacao> eliminacoes = eRep.findAllEliminacoesRA(RA);
 		return eliminacoes;
 	}
 
 	private List<Disciplina> listarDisciplinas(int RA) throws SQLException, ClassNotFoundException {
-		List<Disciplina> disciplinas = slRep.findAllDisciplinasRA(RA);
+		List<Disciplina> disciplinas = eRep.findAllDisciplinasRA(RA);
 		return disciplinas;
 	}
 

@@ -35,11 +35,22 @@ import lombok.ToString;
 
 @NamedNativeQuery(name = "Eliminacao.findAllEliminacaoRA", query = "SELECT * FROM fn_lista_eliminacoes_por_RA(?1)", resultClass = Eliminacao.class)
 
-@NamedStoredProcedureQuery(name = "Eliminacao.sp_inserir_eliminacao", procedureName = "sp_inserir_eliminacao", parameters = {
+@NamedNativeQuery(name = "Eliminacao.findAllEliminacao", query = "SELECT * FROM vw_lista_eliminacoes", resultClass = Eliminacao.class)
 
+@NamedStoredProcedureQuery(name = "Eliminacao.sp_inserir_eliminacao", procedureName = "sp_inserir_eliminacao", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoDisciplina", type = Integer.class),
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoMatricula", type = Integer.class),
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "nomeInstituicao", type = String.class),
+		@StoredProcedureParameter(mode = ParameterMode.OUT, name = "saida", type = String.class) })
+
+@NamedStoredProcedureQuery(name = "Eliminacao.sp_update_eliminacao", procedureName = "sp_update_eliminacao", parameters = {
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigo", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoDisciplina", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoMatricula", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "dataEliminacao", type = Date.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "nomeInstituicao", type = String.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "status", type = String.class),
 		@StoredProcedureParameter(mode = ParameterMode.OUT, name = "saida", type = String.class) })
 
 public class Eliminacao {
@@ -71,14 +82,17 @@ public class Eliminacao {
     })
     private MatriculaDisciplina matriculaDisciplina;
 
-
-    @Transient
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codigoAluno", referencedColumnName = "RA")
     private Aluno aluno;
 
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codigoCurso", referencedColumnName = "codigo", insertable = false, updatable = false)
     private Curso curso;
 
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codigoDisciplina", referencedColumnName = "codigo", insertable = false, updatable = false)
     private Disciplina disciplina;
 
 }

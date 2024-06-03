@@ -1,36 +1,48 @@
 package br.edu.fateczl.CrudAGISAv3.repository;
 
+import java.sql.Date;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 
-
+import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Eliminacao;
 
 
 
 public interface IEliminacaoRepository extends JpaRepository<Eliminacao, Integer> {
 	
-//	@Query(name = "Eliminacao.findAll", nativeQuery = true)
-//    List<Eliminacao> findAllEliminacoes();
-//	
-//	@Procedure(name = "Aluno.sp_iud_aluno")
-//	String sp_iud_aluno(
-//			@Param("acao") String acao,
-//			@Param("CPF") String CPF,
-//			@Param("RA") int RA,
-//			@Param("anoIngresso") int anoIngresso,
-//			@Param("dataConclusao2Grau") Date dataConclusao2Grau,
-//			@Param("dataNascimento") Date dataNascimento,
-//			@Param("emailCorporativo") String emailCorporativo,
-//			@Param("emailPessoal") String emailPessoal,
-//			@Param("instituicaoConclusao2Grau") String instituicaoConclusao2Grau,
-//			@Param("nome") String nome,
-//			@Param("nomeSocial") String nomeSocial,
-//			@Param("pontuacaoVestibular") float pontuacaoVestibular,
-//			@Param("posicaoVestibular") int posicaoVestibular,
-//			@Param("semestreAnoLimiteGraduacao") Date semestreAnoLimiteGraduacao,
-//			@Param("semestreIngresso") int semestreIngresso,
-//			@Param("telefoneContato") String telefoneContato,
-//			@Param("curso") int curso
-//		);
-
+	@Query(name = "Eliminacao.findAllDisciplinasRA", nativeQuery = true)
+    List<Disciplina> findAllDisciplinasRA(int RA);
+	
+	@Query(name = "Eliminacao.findAllEliminacaoRA", nativeQuery = true)
+    List<Eliminacao> findAllEliminacoesRA(int RA);
+	
+	
+	@Query(name = "Eliminacao.findAllEliminacao", nativeQuery = true)
+    List<Eliminacao> findAllEliminacoes();
+	
+	
+	@Procedure(name = "Eliminacao.sp_inserir_eliminacao")
+	String sp_inserir_eliminacao(
+			@Param("codigoDisciplina") int codigoDisciplina,
+			@Param("codigoMatricula") int codigoMatricula,
+			@Param("nomeInstituicao") String nomeInstituicao
+		);
+	
+	@Procedure(name = "Eliminacao.sp_update_eliminacao")
+	String sp_update_eliminacao(
+			@Param("acao") String acao,
+			@Param("codigo") int codigo,
+			@Param("codigoDisciplina") int codigoDisciplina,
+			@Param("codigoMatricula") int codigoMatricula,
+			@Param("dataEliminacao") Date dataEliminacao,
+			@Param("nomeInstituicao") String nomeInstituicao,
+			@Param("status") String status
+		);
+	
+	
 }

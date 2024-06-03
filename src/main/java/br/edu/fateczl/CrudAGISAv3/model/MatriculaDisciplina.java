@@ -43,6 +43,6 @@ public class MatriculaDisciplina {
 	private double notaFinal;
 	
 	@Column(name = "totalFaltas",  nullable = true)
-	private  int totalFaltas;
+	private Integer totalFaltas;
 
 }
