@@ -13,7 +13,7 @@ public interface IMatriculaRepository extends JpaRepository<Matricula, Integer> 
 	
 	@Query(name = "Matricula.findAllBuscarMatricula", nativeQuery = true)
 	Matricula findAllBuscarMatricula(int RA);
-	
+		
 	@Query(name = "Telefone.findAll", nativeQuery = true)
     List<Telefone> findAllTelefones(String cpfAluno);
 		

@@ -30,6 +30,7 @@ import lombok.Setter;
 
 @NamedNativeQuery(name = "Matricula.findAllBuscarMatricula", query = "SELECT * FROM fn_buscar_matricula(?1)", resultClass = Matricula.class)
 
+
 @NamedStoredProcedureQuery(name = "Matricula.sp_iud_disciplina", procedureName = "sp_iud_disciplina ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigo", type = Integer.class),

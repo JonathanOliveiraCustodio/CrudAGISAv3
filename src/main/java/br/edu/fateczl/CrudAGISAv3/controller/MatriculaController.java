@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -16,22 +15,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
-import br.edu.fateczl.CrudAGISAv3.model.Curso;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Matricula;
+import br.edu.fateczl.CrudAGISAv3.model.PeriodoMatricula;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
-import br.edu.fateczl.CrudAGISAv3.repository.ICursoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
-import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinasMatriculadasRepotitory;
 import br.edu.fateczl.CrudAGISAv3.repository.IMatriculaRepository;
-
+import br.edu.fateczl.CrudAGISAv3.repository.IPeriodoMatriculaRepository;
 
 @Controller
 public class MatriculaController {
-	
-
 	
 	@Autowired
 	IDisciplinaRepository dRep;
@@ -39,17 +33,13 @@ public class MatriculaController {
 	@Autowired
 	IMatriculaRepository mRep;
 	
-	@Autowired
-	ICursoRepository cRep;
 	
 	@Autowired
 	IAlunoRepository aRep;
 		
-//	@Autowired
-//	IDisciplinasMatriculadasRepotitory dmRep;
+	@Autowired
+	IPeriodoMatriculaRepository pmRep;
 	
-	
-
 	@RequestMapping(name = "matricula", value = "/matricula", method = RequestMethod.GET)
 	public ModelAndView matriculaGet(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
 		
@@ -161,23 +151,22 @@ public class MatriculaController {
 	}
 
 	private boolean estaNoPeriodoDeMatricula() throws ClassNotFoundException, SQLException {
-	    Curso c = new Curso();
+	    PeriodoMatricula p = new PeriodoMatricula();
 	    long millisAtual = System.currentTimeMillis();
 	    Date dataAtual = new Date(millisAtual);
 	    boolean periodoValido = false;
-	//    c = cRep.consultarPeriodoMatricula();
+	    p = pmRep.findConsultaPeriodoMatricula();
 	    Calendar calendar = Calendar.getInstance();
-	    calendar.setTime(c.getPeriodoMatriculaFim());
+	    calendar.setTime(p.getPeriodoMatriculaFim());
 	    calendar.add(Calendar.DAY_OF_MONTH, 1);
 	    Date periodoMatriculaFimPlusOne = new Date(calendar.getTimeInMillis());
-	    periodoValido = (!c.getPeriodoMatriculaInicio().after(dataAtual) && !periodoMatriculaFimPlusOne.before(dataAtual));
+	    periodoValido = (!p.getPeriodoMatriculaInicio().after(dataAtual) && !periodoMatriculaFimPlusOne.before(dataAtual));
 	    return periodoValido;
 	}
 
 	private Matricula buscarMatriculaAtual(Aluno a) throws ClassNotFoundException, SQLException {
-		Curso c = new Curso();
-		//c = cRep.consultarPeriodoMatricula();
-
+		PeriodoMatricula p = new PeriodoMatricula();
+		p = pmRep.findConsultaPeriodoMatricula();
 		Matricula m = new Matricula();
 	//	m = mRep.buscarMatriculaAluno(a, c.getPeriodoMatriculaInicio(), c.getPeriodoMatriculaFim());
 		return m;

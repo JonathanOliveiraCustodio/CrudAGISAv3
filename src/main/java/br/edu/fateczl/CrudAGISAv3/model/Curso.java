@@ -21,6 +21,7 @@ import lombok.Setter;
 @Table (name ="curso")
 
 @NamedNativeQuery(name = "Curso.findAll", query = "SELECT * FROM v_listar_cursos", resultClass = Curso.class)
+@NamedNativeQuery(name = "Curso.findConsultaPeriodoMatricula", query = "SELECT * FROM v_periodoMatricula", resultClass = Curso.class)
 
 @NamedStoredProcedureQuery(name = "Curso.sp_iud_curso", procedureName = "sp_iud_curso ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),

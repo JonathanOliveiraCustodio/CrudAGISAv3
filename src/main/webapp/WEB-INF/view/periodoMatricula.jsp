@@ -22,13 +22,13 @@
 						<div class="col-md-3">	
 							<input class="form-control" type="date" id="periodoMatriculaInicio"
 							name="periodoMatriculaInicio"
-							value='<c:out value="${curso.periodoMatriculaInicio }"></c:out>'>
+							value='<c:out value="${periodoMatricula.periodoMatriculaInicio }"></c:out>'>
 						</div>
 						<label for="data" class="form-label col-md-1">Fim:</label> 
 						<div class="col-md-3">	
 							<input class="form-control" type="date" id="periodoMatriculaFim"
 							name="periodoMatriculaFim"
-							value='<c:out value="${curso.periodoMatriculaFim }"></c:out>'>
+							value='<c:out value="${periodoMatricula.periodoMatriculaFim }"></c:out>'>
 						</div>
 						<br>
 						<div class="col-md-4 d-grid text-center">

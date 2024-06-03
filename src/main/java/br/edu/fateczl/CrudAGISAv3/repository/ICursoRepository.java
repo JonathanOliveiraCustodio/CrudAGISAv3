@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
-
 import br.edu.fateczl.CrudAGISAv3.model.Curso;
 
 
@@ -14,6 +13,9 @@ public interface ICursoRepository extends JpaRepository<Curso, Integer> {
 		
 	@Query(name = "Curso.findAll", nativeQuery = true)
     List<Curso> findAllCursos();
+	
+	@Query(name = "Curso.findConsultaPeriodoMatricula", nativeQuery = true)
+	Curso findConsultaPeriodoMatricula();
 	
 	@Procedure(name = "Curso.sp_iud_curso")
 	String sp_iud_curso(
