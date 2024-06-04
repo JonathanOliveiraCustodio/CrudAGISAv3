@@ -20,6 +20,9 @@ public interface IAlunoRepository extends JpaRepository<Aluno, String> {
 	@Query(name = "Aluno.findByRA", nativeQuery = true)
 	Aluno findByRA(int RA);
 	
+	@Query(name = "Aluno.findconstruirCabecalhoHistorico", nativeQuery = true)
+	Aluno findconstruirCabecalhoHistorico(String cpf);
+	
 	@Procedure(name = "Aluno.sp_iud_aluno")
 	String sp_iud_aluno(
 			@Param("acao") String acao,
