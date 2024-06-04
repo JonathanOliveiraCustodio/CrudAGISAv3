@@ -148,7 +148,6 @@ public class ProfessorController {
 		} else {
 			return null;
 		}
-
 	}
 
 	private List<Professor> listarProfessores() throws SQLException, ClassNotFoundException {

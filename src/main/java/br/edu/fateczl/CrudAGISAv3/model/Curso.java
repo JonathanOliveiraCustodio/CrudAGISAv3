@@ -1,6 +1,5 @@
 package br.edu.fateczl.CrudAGISAv3.model;
 
-import java.sql.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -53,13 +52,7 @@ public class Curso {
 	
 	@Column(name = "turno", length = 20,  nullable = false)
 	private String turno;
-	
-	@Column(name = "periodo_matricula_inicio",  nullable = true)
-	private Date periodoMatriculaInicio;
-	
-	@Column(name = "periodo_matricula_fim",  nullable = true)
-	private Date periodoMatriculaFim;
-    
+	  
     @Override
 	public String toString() {
 		return nome + " " + turno;

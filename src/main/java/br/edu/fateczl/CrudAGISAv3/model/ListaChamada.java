@@ -10,6 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQuery;
+import jakarta.persistence.NamedStoredProcedureQuery;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -24,6 +28,26 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "listaChamada")
+
+@NamedNativeQuery(name = "ListaChamada.findAllListaChamada", query = "SELECT * FROM vw_lista_chamada", resultClass = ListaChamada.class)
+@NamedNativeQuery(name = "ListaChamada.findListarDatas", query = "SELECT * FROM fn_listar_lista_chamada_datas(?1)", resultClass = ListaChamada.class)
+@NamedNativeQuery(name = "ListaChamada.findlistarDisciplinaProfessor", query = "SELECT * FROM fn_listar_disciplinas_professor(?1)", resultClass = Disciplina.class)
+@NamedNativeQuery(name = "ListaChamada.findConsultarListaChamada", query = "SELECT * FROM fn_Lista_Chamada_Disciplina(?1,?2)", resultClass = ListaChamada.class)
+
+@NamedStoredProcedureQuery(name = "ListaChamada.sp_iud_listaChamada", procedureName = "sp_iud_listaChamada ", parameters = {
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigo", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoDisciplina", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoMatricula", type = Integer.class),	
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "dataChamada", type = Date.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "presenca1", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "presenca2", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "presenca3", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "presenca4", type = Integer.class),
+		@StoredProcedureParameter(mode = ParameterMode.OUT, name = "saida", type = String.class) })
+
+@NamedStoredProcedureQuery(name = "ListaChamada.sp_nova_chamada", procedureName = "sp_nova_chamada ", parameters = {
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoDisciplina", type = Integer.class)})
 
 public class ListaChamada {
 	
@@ -57,7 +81,7 @@ public class ListaChamada {
         @JoinColumn(name = "codigoMatricula", referencedColumnName = "codigoMatricula", insertable = false, updatable = false),
         @JoinColumn(name = "codigoDisciplina", referencedColumnName = "codigoDisciplina", insertable = false, updatable = false)
     })
-    private MatriculaDisciplina matriculaDisciplina1;
+    private MatriculaDisciplina matriculaDisciplina;
 	
 	@Transient
 	private Aluno aluno;
@@ -68,8 +92,6 @@ public class ListaChamada {
 	@Transient
 	private Professor professor;
 	
-	@Transient
-	private MatriculaDisciplina matriculaDisciplina;
 	
 	public String toString() {
         if (dataChamada != null) {

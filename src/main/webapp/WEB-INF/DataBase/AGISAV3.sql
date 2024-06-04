@@ -3,6 +3,8 @@ CREATE DATABASE SistemaAGISAV3
 GO
 USE SistemaAGISAV3
 GO
+
+
 -- VIEW OK
 CREATE VIEW v_listar_cursos AS
 SELECT 
@@ -105,9 +107,11 @@ CREATE VIEW v_listarCurso AS
 SELECT codigo, nome, cargaHoraria, sigla, ultimaNotaENADE, turno,periodo_matricula_inicio,
         periodo_matricula_fim  FROM curso
 GO
+--View OK
 CREATE VIEW v_periodoMatricula AS
-SELECT TOP 1 periodo_matricula_inicio, periodo_matricula_fim FROM curso ORDER BY codigo ASC
+SELECT TOP 1 periodo_matricula_inicio, periodo_matricula_fim FROM periodoMatricula
 GO
+SELECT * FROM v_periodoMatricula
 
 CREATE PROCEDURE sp_validatitulacao 
 	@titulacao VARCHAR(50),
@@ -219,7 +223,7 @@ GO
 -- Procedure OK
 CREATE PROCEDURE sp_iud_curso 
     @acao CHAR(1), 
-    @codigo INT, 
+    @codigo INT = NULL, 
     @nome VARCHAR(100), 
     @cargaHoraria INT,
     @sigla VARCHAR(10),
@@ -228,55 +232,30 @@ CREATE PROCEDURE sp_iud_curso
     @saida VARCHAR(100) OUTPUT
 AS
 BEGIN
-    DECLARE @validoCodigo BIT
-    -- Verificar se o código é válido
-    IF (@codigo >= 0 AND @codigo <= 100)
-    BEGIN
-        SET @validoCodigo = 1
-    END
-    ELSE
-    BEGIN
-        SET @validoCodigo = 0
-    END
-
     IF (@acao = 'I')
     BEGIN
         -- Inserir curso
-        IF @validoCodigo = 1
-        BEGIN
-            INSERT INTO curso (codigo, nome, cargaHoraria, sigla, ultimaNotaENADE, turno) 
-            VALUES (@codigo, @nome, @cargaHoraria, @sigla, @ultimaNotaENADE, @turno)
-            SET @saida = 'Curso inserido com sucesso'
-        END
-        ELSE
-        BEGIN
-            RAISERROR('Código de curso inválido', 16, 1)
-            RETURN
-        END
+        INSERT INTO curso (nome, cargaHoraria, sigla, ultimaNotaENADE, turno) 
+        VALUES (@nome, @cargaHoraria, @sigla, @ultimaNotaENADE, @turno)
+        SET @saida = 'Curso inserido com sucesso'
     END
     ELSE IF (@acao = 'U')
     BEGIN
         -- Atualizar curso
-        IF @validoCodigo = 1
-        BEGIN
-            UPDATE curso SET nome = @nome, cargaHoraria = @cargaHoraria, 
-            sigla = @sigla, ultimaNotaENADE = @ultimaNotaENADE, turno = @turno 
-            WHERE codigo = @codigo
-            SET @saida = 'Curso alterado com sucesso'
-        END
-        ELSE
-        BEGIN
-            RAISERROR('Código de curso inválido', 16, 1)
-            RETURN
-        END
+        UPDATE curso SET nome = @nome, cargaHoraria = @cargaHoraria, 
+        sigla = @sigla, ultimaNotaENADE = @ultimaNotaENADE, turno = @turno 
+        WHERE codigo = @codigo
+        SET @saida = 'Curso alterado com sucesso'
     END
-    ELSE BEGIN
-    IF (@acao = 'D')
+    ELSE IF (@acao = 'D')
+    BEGIN
+        -- Excluir curso
         DELETE FROM curso WHERE codigo = @codigo;
         SET @saida = 'Curso excluído com sucesso.';
     END
 END
 GO
+
 --Procedure OK
 CREATE PROCEDURE sp_validaCPF 
     @CPF CHAR(11),
@@ -621,14 +600,14 @@ RETURN
     AND lc.dataChamada = @dataChamada
 );
 GO
---SELECT * FROM eliminacoes
+SELECT * FROM matricula
+SELECT * FROM matriculaDisciplina
 
---SELECT * FROM fn_Lista_Chamada_Disciplina(1001,'2024-04-02');
 CREATE PROCEDURE sp_iud_listaChamada
     @acao CHAR(1),
     @codigo INT,
-    @codigoMatricula INT,
-    @codigoDisciplina INT,
+	@codigoDisciplina INT,
+    @codigoMatricula INT, 
     @dataChamada DATE,
     @presenca1 INT,
     @presenca2 INT,
@@ -639,14 +618,14 @@ AS
 BEGIN
     IF (@acao = 'I')
     BEGIN
-        INSERT INTO listaChamada (codigo, codigoMatricula, codigoDisciplina, dataChamada, presenca1, presenca2, presenca3, presenca4)
-        VALUES (@codigo, @codigoMatricula, @codigoDisciplina, @dataChamada, @presenca1, @presenca2, @presenca3, @presenca4)
+        INSERT INTO listaChamada (codigo, codigoDisciplina, codigoMatricula, dataChamada, presenca1, presenca2, presenca3, presenca4)
+        VALUES (@codigo, @codigoDisciplina, @codigoMatricula, @dataChamada, @presenca1, @presenca2, @presenca3, @presenca4)
         SET @saida = 'Registro de chamada inserido com sucesso'
     END
     ELSE IF (@acao = 'U')
     BEGIN
         UPDATE listaChamada
-        SET codigoMatricula = @codigoMatricula, codigoDisciplina = @codigoDisciplina, dataChamada = @dataChamada,
+        SET codigoDisciplina = @codigoDisciplina, codigoMatricula = @codigoMatricula, dataChamada = @dataChamada,
             presenca1 = @presenca1, presenca2 = @presenca2, presenca3 = @presenca3, presenca4 = @presenca4
         WHERE codigo = @codigo
         SET @saida = 'Registro de chamada alterado com sucesso'
@@ -705,8 +684,6 @@ RETURN
     WHERE a.RA = @RA
 );
 GO
---SELECT * FROM fn_lista_eliminacoes_por_RA(20167890);
---SELECT * FROM fn_lista_eliminacoes_por_RA(20167890);
 
 CREATE FUNCTION fn_buscar_eliminacao (@codigo INT)
 RETURNS TABLE
@@ -732,27 +709,7 @@ RETURN
     WHERE e.codigo = @codigo
 );
 GO
-/*
-CREATE FUNCTION fn_listar_disciplinas_RA (@RA INT)
-RETURNS TABLE
-AS
-RETURN
-(
-    SELECT nomeDisciplina, codigoDisciplina, codigoMatricula
-    FROM (
-        SELECT d.nome AS   nomeDisciplina,
-               d.codigo AS codigoDisciplina,
-               m.codigo AS codigoMatricula,
-               ROW_NUMBER() OVER (PARTITION BY d.codigo ORDER BY m.codigo) AS row_num
-        FROM aluno a
-        INNER JOIN matricula m ON a.CPF = m.codigoAluno
-        INNER JOIN curso c ON a.curso = c.codigo
-        INNER JOIN disciplina d ON c.codigo = d.codigoCurso
-        WHERE a.RA = @RA
-    ) AS disciplinas_numero_linha
-    WHERE row_num = 1
-);
-*/
+
 CREATE FUNCTION  fn_listar_disciplinas_RA(@RA INT)
 RETURNS TABLE
 AS
@@ -769,10 +726,6 @@ RETURN
 
 SELECT * FROM fn_listar_disciplinas_RA(20167890);
 
-
---SELECT * FROM fn_listar_disciplinas_RA(20169012);
-
---SELECT * FROM matricula
 
 GO
 CREATE FUNCTION fn_consultar_aluno_RA (@RA INT)
@@ -884,39 +837,83 @@ JOIN disciplina d ON e.codigoDisciplina = d.codigo
 JOIN curso c ON a.curso = c.codigo
 WHERE e.status = 'Em análise';
 GO
+-- View OK
+CREATE VIEW vw_lista_chamada
+AS
+SELECT lc.codigo,
+       lc.codigoDisciplina,
+	   lc.codigoMatricula,
+	   lc.dataChamada,
+	   lc.presenca1,
+	   lc.presenca2,
+	   lc.presenca3,
+	   lc.presenca4
+FROM listaChamada lc
+GO
 
-SELECT * FROM vw_lista_eliminacoes
+SELECT * FROM vw_lista_chamada
 
 SELECT * FROM eliminacoes 
 
-SELECT * FROM matricula 
+SELECT * FROM fn_listar_disciplinas_professor(1)
 
-CREATE FUNCTION fn_listar_disciplinas_professor
-(
-    @codigo_professor INT
-)
+CREATE FUNCTION fn_listar_disciplinas_professor(@codigo_professor INT)
 RETURNS TABLE
 AS
 RETURN
 (
-    SELECT d.codigo AS codigoDisciplina, d.nome AS nomeDisciplina, d.horasSemanais, SUBSTRING(d.horarioInicio, 1, 5) AS horarioInicio, d.semestre, d.diaSemana, p.nome AS nomeProfessor, c.nome AS nomeCurso 
-    FROM disciplina d 
+    SELECT d.codigo, 
+	d.nome, 
+	d.horasSemanais, 
+	SUBSTRING(d.horarioInicio, 1, 5) AS horarioInicio, 
+	d.semestre, 
+	d.diaSemana, p.nome AS nomeProfessor, 
+	c.nome AS nomeCurso, 
+    p.codigo AS codigoProfessor,
+	c.codigo AS codigoCurso
+	FROM disciplina d 
     JOIN professor p ON d.codigoProfessor = p.codigo 
     JOIN curso c ON d.codigoCurso = c.codigo 
     WHERE p.codigo = @codigo_professor
 );
 GO
+--FUNCTION OK
 CREATE FUNCTION fn_listar_lista_chamada_datas (@codigoDisciplina INT)
 RETURNS TABLE
 AS
 RETURN
 (
-    SELECT dataChamada
-    FROM listaChamada
-    WHERE codigoDisciplina = @codigoDisciplina
-    GROUP BY dataChamada
+    WITH CTE AS (
+        SELECT 
+            lc.dataChamada,
+            lc.codigo,
+            lc.codigoDisciplina,
+            lc.codigoMatricula,
+            lc.presenca1,
+            lc.presenca2,
+            lc.presenca3,
+            lc.presenca4,
+            ROW_NUMBER() OVER (PARTITION BY lc.dataChamada ORDER BY lc.codigo) AS row_num
+        FROM listaChamada lc
+        WHERE lc.codigoDisciplina = @codigoDisciplina
+    )
+    SELECT 
+        dataChamada,
+        codigo,
+        codigoDisciplina,
+        codigoMatricula,
+        presenca1,
+        presenca2,
+        presenca3,
+        presenca4
+    FROM CTE
+    WHERE row_num = 1
 );
 GO
+
+
+SELECT * FROM fn_listar_lista_chamada_datas(1002)
+
 CREATE PROCEDURE sp_update_eliminacao
     @acao CHAR(1),
     @codigo INT,
@@ -971,6 +968,7 @@ BEGIN
     DEALLOCATE c;
 END
 GO
+
 CREATE FUNCTION fn_cabecalho_historico(@cpf CHAR(11))
 RETURNS TABLE
 AS
@@ -983,6 +981,7 @@ RETURN
 	a.curso = c.codigo
 );
 GO
+
 CREATE FUNCTION fn_corpo_historico(@cpf CHAR(11))
 RETURNS TABLE
 AS
@@ -1006,18 +1005,19 @@ RETURN
 	GROUP BY d.codigo, d.nome, p.nome, md.notaFinal
 );
 GO
+-- Verificar Procedure
 CREATE PROCEDURE sp_nova_chamada
-    @codigo_disciplina INT
+    @codigoDisciplina INT
 AS
 BEGIN
     DECLARE @matricula INT,
 			@codigo INT,
 			@numero_aulas INT
-	SELECT @numero_aulas = d.horasSemanais FROM disciplina d WHERE d.codigo = @codigo_disciplina
+	SELECT @numero_aulas = d.horasSemanais FROM disciplina d WHERE d.codigo = @codigoDisciplina
     DECLARE c CURSOR FOR
         SELECT m.codigo
         FROM matriculaDisciplina md, matricula m
-        WHERE md.codigoDisciplina = @codigo_disciplina AND m.codigo = md.CodigoMatricula AND md.situacao = 'Cursando'
+        WHERE md.codigoDisciplina = @codigoDisciplina AND m.codigo = md.codigoDisciplina AND md.situacao = 'Cursando'
     OPEN c
     FETCH NEXT FROM c INTO @matricula
     WHILE @@FETCH_STATUS = 0
@@ -1027,21 +1027,22 @@ BEGIN
 		BEGIN
 			SET @codigo = 1
 		END
-        INSERT INTO listaChamada VALUES (@codigo, @matricula, @codigo_disciplina, GETDATE(), 1, 1, (CASE WHEN @numero_aulas > 2 THEN 1 ELSE NULL END), (CASE WHEN @numero_aulas > 3 THEN 1 ELSE NULL END))
+        INSERT INTO listaChamada VALUES (@codigo, @matricula, @codigoDisciplina, GETDATE(), 1, 1, (CASE WHEN @numero_aulas > 2 THEN 1 ELSE NULL END), (CASE WHEN @numero_aulas > 3 THEN 1 ELSE NULL END))
         FETCH NEXT FROM c INTO @matricula
     END
     CLOSE c
     DEALLOCATE c
 END
-GO
+
+SELECT * FROM listaChamada
+
 --Procedure Referente a Matricula
 CREATE FUNCTION fn_buscar_matricula (@RA INT)
 RETURNS TABLE
 AS
 RETURN
 (
-    SELECT TOP 1 
-        
+    SELECT TOP 1        
         m.*,
 		a.RA AS aluno,
         a.nome AS nomeAluno
@@ -1058,19 +1059,23 @@ GO
 SELECT * FROM fn_buscar_matricula(20167890);
 SELECT * FROM eliminacoes
 
-INSERT INTO curso (codigo, nome, cargaHoraria, sigla, ultimaNotaENADE, turno, periodo_matricula_inicio, periodo_matricula_fim) 
+INSERT INTO periodoMatricula (periodo_matricula_inicio, periodo_matricula_fim)VALUES 
+    ('2024-01-01', '2025-01-01')
+GO
+
+INSERT INTO curso (codigo, nome, cargaHoraria, sigla, ultimaNotaENADE, turno) 
 VALUES 
-(1, 'Administração de Empresas', 4000, 'ADM', 7.8, 'Matutino', '2024-01-01', '2025-01-01'),
-(2, 'Engenharia Civil', 4500, 'ENG CIV', 8.5, 'Vespertino', '2024-01-01', '2025-01-01'),
-(3, 'Direito', 4000, 'DIR', 8.2, 'Noturno', '2024-01-01', '2025-01-01'),
-(4, 'Medicina', 6000, 'MED', 9.3, 'Integral', '2024-01-01', '2025-01-01'),
-(5, 'Ciência da Computação', 3600, 'CC', 8.9, 'Matutino', '2024-01-01', '2025-01-01'),
-(6, 'Psicologia', 4200, 'PSI', 8.0, 'Vespertino', '2024-01-01', '2025-01-01'),
-(7, 'Administração Pública', 3800, 'ADM PUB', 7.5, 'Noturno', '2024-01-01', '2025-01-01'),
-(8, 'Engenharia Elétrica', 4800, 'ENG ELE', 8.7, 'Integral', '2024-01-01', '2025-01-01'),
-(9, 'Gastronomia', 3200, 'GAS', 7.0, 'Matutino', '2024-01-01', '2025-01-01'),
-(10, 'Arquitetura e Urbanismo', 4200, 'ARQ', 8.4, 'Vespertino', '2024-01-01', '2025-01-01'),
-(11, 'Analise e Desenvolvimento de Sistemas', 4200, 'ADS', 8.4, 'Vespertino', '2024-01-01', '2024-01-01');
+(1, 'Administração de Empresas', 4000, 'ADM', 7.8, 'Matutino'),
+(2, 'Engenharia Civil', 4500, 'ENG CIV', 8.5, 'Vespertino'),
+(3, 'Direito', 4000, 'DIR', 8.2, 'Noturno'),
+(4, 'Medicina', 6000, 'MED', 9.3, 'Integral'),
+(5, 'Ciência da Computação', 3600, 'CC', 8.9, 'Matutino'),
+(6, 'Psicologia', 4200, 'PSI', 8.0, 'Vespertino'),
+(7, 'Administração Pública', 3800, 'ADM PUB', 7.5, 'Noturno'),
+(8, 'Engenharia Elétrica', 4800, 'ENG ELE', 8.7, 'Integral'),
+(9, 'Gastronomia', 3200, 'GAS', 7.0, 'Matutino'),
+(10, 'Arquitetura e Urbanismo', 4200, 'ARQ', 8.4, 'Vespertino'),
+(11, 'Analise e Desenvolvimento de Sistemas', 4200, 'ADS', 8.4, 'Vespertino');
 GO
 INSERT INTO aluno (CPF, nome, nomeSocial, dataNascimento, telefoneContato, emailPessoal, emailCorporativo, dataConclusao2Grau, instituicaoConclusao2Grau, pontuacaoVestibular, posicaoVestibular, anoIngresso, semestreIngresso, semestreAnoLimiteGraduacao, RA, curso)
 VALUES
