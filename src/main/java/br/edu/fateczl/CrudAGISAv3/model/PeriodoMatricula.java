@@ -26,8 +26,8 @@ import lombok.Setter;
 
 
 @NamedStoredProcedureQuery(name = "PeriodoMatricula.sp_u_periodomatricula", procedureName = "sp_u_periodomatricula ", parameters = {
-		@StoredProcedureParameter(mode = ParameterMode.IN, name = "periodo_matricula_inicio", type = Date.class),
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "periodo_matricula_fim", type = Date.class),
+		@StoredProcedureParameter(mode = ParameterMode.IN, name = "periodo_matricula_inicio", type = Date.class),
 		@StoredProcedureParameter(mode = ParameterMode.OUT, name = "saida", type = String.class) })
 
 @IdClass(PeriodoMatriculaId.class)

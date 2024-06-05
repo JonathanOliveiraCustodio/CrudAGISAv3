@@ -15,6 +15,11 @@ public interface IDisciplinaRepository extends JpaRepository<Disciplina, Integer
 	@Query(name = "Disciplina.findAll", nativeQuery = true)
     List<Disciplina> findAllDisciplinas();
 	
+	//@Query(name = "Disciplina.FindListarParaMatricula", nativeQuery = true)
+   // List<Disciplina> FindListarParaMatricula(String codigoAluno, int codigoCurso);
+//	/
+	
+	
 	@Procedure(name = "Disciplina.sp_iud_disciplina")
 	String sp_iud_disciplina(
 			@Param("acao") String acao,

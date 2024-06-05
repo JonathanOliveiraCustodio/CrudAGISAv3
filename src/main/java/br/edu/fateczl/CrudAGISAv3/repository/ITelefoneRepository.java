@@ -14,9 +14,7 @@ public interface ITelefoneRepository extends JpaRepository<Telefone, TelefoneId>
 	
 	@Query(name = "Telefone.findAll", nativeQuery = true)
     List<Telefone> findAllTelefones(String cpfAluno);
-	
-	//Telefone fn_consultar_telefone_aluno(String CPF, String numero);
-	
+		
 	@Procedure(name = "Telefone.sp_iud_telefone")
 	String sp_iud_telefone(
 			@Param("acao") String acao,

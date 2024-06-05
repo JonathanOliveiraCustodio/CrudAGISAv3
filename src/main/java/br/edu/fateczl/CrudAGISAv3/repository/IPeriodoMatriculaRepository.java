@@ -16,9 +16,9 @@ public interface IPeriodoMatriculaRepository extends JpaRepository<PeriodoMatric
 	PeriodoMatricula findConsultaPeriodoMatricula();
 	
 	@Procedure(name = "PeriodoMatricula.sp_u_periodomatricula")
-	String sp_u_periodomatricula(
-			@Param("periodo_matricula_inicio") Date periodoMatriculaInicio,
-		    @Param("periodo_matricula_fim") Date periodoMatriculaFim
+	String sp_u_periodomatricula(	
+		    @Param("periodo_matricula_fim") Date periodoMatriculaFim,
+		    @Param("periodo_matricula_inicio") Date periodoMatriculaInicio
 			);
 
 }

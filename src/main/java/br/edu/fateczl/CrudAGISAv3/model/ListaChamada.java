@@ -33,6 +33,7 @@ import lombok.Setter;
 @NamedNativeQuery(name = "ListaChamada.findListarDatas", query = "SELECT * FROM fn_listar_lista_chamada_datas(?1)", resultClass = ListaChamada.class)
 @NamedNativeQuery(name = "ListaChamada.findlistarDisciplinaProfessor", query = "SELECT * FROM fn_listar_disciplinas_professor(?1)", resultClass = Disciplina.class)
 @NamedNativeQuery(name = "ListaChamada.findConsultarListaChamada", query = "SELECT * FROM fn_Lista_Chamada_Disciplina(?1,?2)", resultClass = ListaChamada.class)
+@NamedNativeQuery(name = "ListaChamada.findConstruirCorpo", query = "SELECT * FROM fn_corpo_historico(?1)", resultClass = ListaChamada.class)
 
 @NamedStoredProcedureQuery(name = "ListaChamada.sp_iud_listaChamada", procedureName = "sp_iud_listaChamada ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),

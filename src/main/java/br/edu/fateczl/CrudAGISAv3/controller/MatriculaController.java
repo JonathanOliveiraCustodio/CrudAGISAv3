@@ -20,29 +20,32 @@ import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Matricula;
 import br.edu.fateczl.CrudAGISAv3.model.PeriodoMatricula;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
+import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaMatriculadaRepotitory;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IMatriculaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IPeriodoMatriculaRepository;
 
 @Controller
 public class MatriculaController {
-	
+
 	@Autowired
 	IDisciplinaRepository dRep;
-	
+
 	@Autowired
 	IMatriculaRepository mRep;
-	
-	
+
 	@Autowired
 	IAlunoRepository aRep;
-		
+
 	@Autowired
 	IPeriodoMatriculaRepository pmRep;
-	
+
+	@Autowired
+	IDisciplinaMatriculadaRepotitory dmRep;
+
 	@RequestMapping(name = "matricula", value = "/matricula", method = RequestMethod.GET)
 	public ModelAndView matriculaGet(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
-		
+
 		String erro = "";
 		boolean periodoValido = false;
 		try {
@@ -54,16 +57,16 @@ public class MatriculaController {
 			model.addAttribute("erro", erro);
 			model.addAttribute("periodoValido", periodoValido);
 
-			}
-		
+		}
+
 		return new ModelAndView("matricula");
 	}
 
 	@RequestMapping(name = "matricula", value = "/matricula", method = RequestMethod.POST)
 	public ModelAndView matriculaPost(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
-		
-		String cmd =  allRequestParam.get("botao");
-		String RA =  allRequestParam.get("RA");
+
+		String cmd = allRequestParam.get("botao");
+		String RA = allRequestParam.get("RA");
 		boolean periodoValido = false;
 
 		// saida
@@ -98,13 +101,13 @@ public class MatriculaController {
 				m = buscarMatriculaAtual(a);
 				for (String key : allRequestParam.keySet()) {
 					if (key.contains("disciplinaCheckbox")) {
-		                String c = allRequestParam.get(key);
+						String c = allRequestParam.get(key);
 						Disciplina d = new Disciplina();
 						d.setCodigo(Integer.parseInt(c));
 						d = buscarDisciplina(d);
 						saida = realizarMatriculaDisciplina(d, m);
-		            }
-		        }
+					}
+				}
 				if (erro != "") {
 					saida = "";
 				}
@@ -125,7 +128,7 @@ public class MatriculaController {
 		model.addAttribute("disciplinasMatriculadas", codigosDisciplinasMatriculadas);
 		return new ModelAndView("matricula");
 	}
-	
+
 	private Aluno buscarAluno(Aluno a) throws SQLException, ClassNotFoundException {
 		Optional<Aluno> alunoOptional = aRep.findById(a.getCPF());
 		if (alunoOptional.isPresent()) {
@@ -145,41 +148,41 @@ public class MatriculaController {
 	}
 
 	private String realizarMatriculaDisciplina(Disciplina d, Matricula m) throws SQLException, ClassNotFoundException {
-//
-		String saida = null;//dmRep.matricularDisciplina(d, m);
+		String saida = dmRep.sp_matricular_disciplina(d.getCodigo(), m.getCodigo());
 		return saida;
 	}
 
 	private boolean estaNoPeriodoDeMatricula() throws ClassNotFoundException, SQLException {
-	    PeriodoMatricula p = new PeriodoMatricula();
-	    long millisAtual = System.currentTimeMillis();
-	    Date dataAtual = new Date(millisAtual);
-	    boolean periodoValido = false;
-	    p = pmRep.findConsultaPeriodoMatricula();
-	    Calendar calendar = Calendar.getInstance();
-	    calendar.setTime(p.getPeriodoMatriculaFim());
-	    calendar.add(Calendar.DAY_OF_MONTH, 1);
-	    Date periodoMatriculaFimPlusOne = new Date(calendar.getTimeInMillis());
-	    periodoValido = (!p.getPeriodoMatriculaInicio().after(dataAtual) && !periodoMatriculaFimPlusOne.before(dataAtual));
-	    return periodoValido;
+		PeriodoMatricula p = new PeriodoMatricula();
+		long millisAtual = System.currentTimeMillis();
+		Date dataAtual = new Date(millisAtual);
+		boolean periodoValido = false;
+		p = pmRep.findConsultaPeriodoMatricula();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(p.getPeriodoMatriculaFim());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		Date periodoMatriculaFimPlusOne = new Date(calendar.getTimeInMillis());
+		periodoValido = (!p.getPeriodoMatriculaInicio().after(dataAtual)
+				&& !periodoMatriculaFimPlusOne.before(dataAtual));
+		return periodoValido;
 	}
 
 	private Matricula buscarMatriculaAtual(Aluno a) throws ClassNotFoundException, SQLException {
 		PeriodoMatricula p = new PeriodoMatricula();
 		p = pmRep.findConsultaPeriodoMatricula();
 		Matricula m = new Matricula();
-	//	m = mRep.buscarMatriculaAluno(a, c.getPeriodoMatriculaInicio(), c.getPeriodoMatriculaFim());
+		m = mRep.findBuscarMatriculaAluno(a, p.getPeriodoMatriculaInicio(), p.getPeriodoMatriculaFim());
 		return m;
 	}
 
-	private List<Integer> buscarDisciplinasMatriculadasCodigos(Matricula m) throws ClassNotFoundException, SQLException {
-	//	List<Integer> codigos = dmRep.buscarCodigoDisciplinasMatriculadas(m.getCodigo());
-	//	return codigos;
-		return null;
+	private List<Integer> buscarDisciplinasMatriculadasCodigos(Matricula m)
+			throws ClassNotFoundException, SQLException {
+		List<Integer> codigos = dmRep.findBuscarCodigoDisciplinasMatriculadas(m.getCodigo());
+		return codigos;
 	}
 
 	private Matricula novaMatricula(Aluno a) throws ClassNotFoundException, SQLException {
-	//	mRep.novaMatricula(a);
+		mRep.sp_nova_matricula(a.getCPF());
 		Matricula m = buscarMatriculaAtual(a);
 		return m;
 	}
@@ -187,8 +190,8 @@ public class MatriculaController {
 	private Map<String, List<Disciplina>> disciplinasDisponiveis(Aluno a) throws ClassNotFoundException, SQLException {
 		List<Disciplina> disciplinas = new ArrayList<>();
 		Map<String, List<Disciplina>> disciplinasPorSemana = new HashMap<String, List<Disciplina>>();
-		
-		//disciplinas = dRep.listarParaMatricula(a);
+
+		// disciplinas = dRep.FindListarParaMatricula(a.getCPF(),a.getCurso().getCodigo());
 		for (Disciplina d : disciplinas) {
 			List<Disciplina> temp = disciplinasPorSemana.get(d.getDiaSemana());
 			if (temp == null) {
@@ -199,7 +202,5 @@ public class MatriculaController {
 		}
 		return disciplinasPorSemana;
 	}
-	
-	
 
 }

@@ -1,6 +1,7 @@
 package br.edu.fateczl.CrudAGISAv3.model;
 
 import java.sql.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -104,8 +105,12 @@ public class Aluno {
 	@ManyToOne(targetEntity = Curso.class, fetch = FetchType.LAZY)
 	@JoinColumn(name = "curso", nullable = false)	
 	private Curso curso;
+		
 	
-	//private Matricula matricula;
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "matricula", referencedColumnName = "codigo", insertable = false, updatable = false)
+	private Matricula matricula;
+	
 	
 	@Override
 	public String toString() {

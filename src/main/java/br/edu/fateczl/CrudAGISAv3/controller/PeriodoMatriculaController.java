@@ -66,7 +66,7 @@ public class PeriodoMatriculaController {
 	}
 
 	private String alterarPeriodoMatricula(PeriodoMatricula pm) throws SQLException, ClassNotFoundException {
-		String saida = cDao.sp_u_periodomatricula(pm.getPeriodoMatriculaInicio(),pm.getPeriodoMatriculaFim());
+		String saida = cDao.sp_u_periodomatricula(pm.getPeriodoMatriculaFim(),pm.getPeriodoMatriculaInicio());
 		return saida;
 
 	}

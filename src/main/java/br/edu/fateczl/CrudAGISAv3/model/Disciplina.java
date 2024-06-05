@@ -28,7 +28,7 @@ import lombok.Setter;
 
 @NamedNativeQuery(name = "Disciplina.findAll", query = "SELECT * FROM v_listar_disciplinas", resultClass = Disciplina.class)
 
-
+//@NamedNativeQuery(name = "Disciplina.FindListarParaMatricula", query = "SELECT * FROM fn_listarParaMatricula(?1,?2)", resultClass = MatriculaDisciplina.class)
 
 @NamedStoredProcedureQuery(name = "Disciplina.sp_iud_disciplina", procedureName = "sp_iud_disciplina ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),

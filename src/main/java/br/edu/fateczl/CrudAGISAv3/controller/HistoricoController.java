@@ -54,6 +54,7 @@ public class HistoricoController {
 		}
 		model.addAttribute("erro", erro);
 		model.addAttribute("aluno", a);
+		model.addAttribute("matricula", m);
 		model.addAttribute("listaChamadas", listaChamadas);
 		return new ModelAndView("historico");
 	}
