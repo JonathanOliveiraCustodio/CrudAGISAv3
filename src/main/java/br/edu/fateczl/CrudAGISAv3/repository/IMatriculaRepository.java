@@ -15,6 +15,10 @@ import br.edu.fateczl.CrudAGISAv3.model.Telefone;
 
 public interface IMatriculaRepository extends JpaRepository<Matricula, Integer> {
 	
+		
+	@Query(name = "Matricula.findBuscarMatriculaAtual", nativeQuery = true)
+	Matricula findBuscarMatriculaAtualAluno(int codigo);
+	
 	@Query(name = "Matricula.findAllBuscarMatricula", nativeQuery = true)
 	Matricula findAllBuscarMatricula(int RA);
 		

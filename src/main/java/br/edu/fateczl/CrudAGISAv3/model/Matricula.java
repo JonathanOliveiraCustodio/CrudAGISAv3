@@ -28,6 +28,10 @@ import lombok.Setter;
 @Table (name ="matricula")
 @Inheritance(strategy = InheritanceType.JOINED)
 
+
+
+@NamedNativeQuery(name = "Matricula.findBuscarMatriculaAtual", query = "SELECT * FROM fn_matricula_atual(?1)", resultClass = Matricula.class)
+
 @NamedNativeQuery(name = "Matricula.findAllBuscarMatricula", query = "SELECT * FROM fn_buscar_matricula(?1)", resultClass = Matricula.class)
 
 @NamedNativeQuery(name = "Matricula.findBuscarMatriculaAluno", query = "SELECT TOP 1 * FROM matricula WHERE codigoAluno = (?1) AND dataMatricula <= (?2) AND dataMatricula >= (?3) ORDER BY semestre DESC", resultClass = Matricula.class)

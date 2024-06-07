@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import br.edu.fateczl.CrudAGISAv3.model.Aluno;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.ListaChamada;
 import br.edu.fateczl.CrudAGISAv3.model.Professor;
+import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IListaChamadaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IProfessorRepository;
@@ -36,6 +38,8 @@ public class ListaChamadaController {
 	@Autowired
 	IProfessorRepository pRep;
 	
+	@Autowired
+	IAlunoRepository aRep;
 	String dataDaLista;
 
 	@RequestMapping(name = "listaChamada", value = "/listaChamada", method = RequestMethod.GET)
@@ -77,6 +81,7 @@ public class ListaChamadaController {
 		String professor = allRequestParam.get("professor");
 		String dataChamada = allRequestParam.get("dataChamada");
 		String disciplina = allRequestParam.get("disciplina");
+		String aluno = allRequestParam.get("aluno");
 
 		String saida = "";
 		String erro = "";
@@ -85,6 +90,7 @@ public class ListaChamadaController {
 
 		Professor p = new Professor();
 		Disciplina d = new Disciplina();
+		Aluno a = new Aluno();
 
 		List<Disciplina> disciplinas = new ArrayList<>();
 		List<ListaChamada> listasChamadas = new ArrayList<>();
@@ -134,6 +140,9 @@ public class ListaChamadaController {
 				}
 
 				if (cmd.contains("Consultar")) {
+//					a.setCPF((aluno));
+//					a = buscarAluno(a);
+//					lc.setAluno(a);
 					d.setCodigo(Integer.parseInt(disciplina));
 					d = buscarDisciplina(d);
 					lc.setDisciplina(d);
@@ -154,6 +163,7 @@ public class ListaChamadaController {
 			model.addAttribute("listasChamadas", listasChamadas);
 			model.addAttribute("disciplinas", disciplinas);
 			model.addAttribute("disciplina", d);
+			model.addAttribute("aluno", a);
 			model.addAttribute("professores", professores);
 			model.addAttribute("datasChamadas", datasChamadas);
 			model.addAttribute("dataChamada", dataChamada);
@@ -175,6 +185,15 @@ public class ListaChamadaController {
 		Optional<Professor> professorOptional = pRep.findById(p.getCodigo());
 		if (professorOptional.isPresent()) {
 			return professorOptional.get();
+		} else {
+			return null;
+		}
+	}
+	
+	private Aluno buscarAluno(Aluno a) throws SQLException, ClassNotFoundException {
+		Optional<Aluno> alunoOptional = aRep.findById(a.getCPF());
+		if (alunoOptional.isPresent()) {
+			return alunoOptional.get();
 		} else {
 			return null;
 		}

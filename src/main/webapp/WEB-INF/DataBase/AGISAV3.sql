@@ -491,9 +491,6 @@ BEGIN
     END
 END
 GO
-
-
-
 -- PROCEDURE OK
 CREATE PROCEDURE sp_nova_matricula
     @codigo_aluno CHAR(11),
@@ -533,7 +530,6 @@ BEGIN
     SET @saida = 'Matrícula criada com sucesso'
 END
 GO
-
 -- PROCEDURE OK
 CREATE PROCEDURE sp_matricular_disciplina
     @codigo_disciplina INT,
@@ -591,8 +587,6 @@ BEGIN
     END
 END
 GO
-
-
 -- Procedure OK
 CREATE PROCEDURE sp_iud_telefone
  @acao CHAR(1), 
@@ -644,6 +638,9 @@ RETURN
            lc.presenca2,
            lc.presenca3,
            lc.presenca4, 
+		   lc.codigoProfessor,
+		   a.RA,
+		   a.CPF,
            a.nome AS nomeAluno,
            d.nome AS nomeDisciplina
     FROM listaChamada lc
@@ -808,48 +805,23 @@ RETURN
 GO
 
 CREATE PROCEDURE sp_inserir_eliminacao
-    @codigoDisciplina INT,
     @codigoMatricula INT,
+    @codigoDisciplina INT,
     @nomeInstituicao VARCHAR(255),
     @saida VARCHAR(100) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Verificar se a combinação de codigoDisciplina e codigoMatricula existe na tabela matriculaDisciplina
-    IF EXISTS (SELECT 1 FROM matriculaDisciplina WHERE codigoDisciplina = @codigoDisciplina AND codigoMatricula = @codigoMatricula)
-    BEGIN
-        -- Inserir a nova eliminação na tabela
-        INSERT INTO eliminacoes (codigoDisciplina, codigoMatricula, dataEliminacao, nomeInstituicao, status)
-        VALUES (@codigoDisciplina, @codigoMatricula, GETDATE(), @nomeInstituicao, 'Em análise');
-        
-        -- Definir a mensagem de saída
-        SET @saida = 'Eliminação inserida com sucesso.';
-    END
-    ELSE
-    BEGIN
-        -- Definir a mensagem de saída em caso de falha na verificação
-        SET @saida = 'Erro: Disciplina ou Matrícula não encontrada na tabela matriculaDisciplina.';
-    END
+    -- Inserir a nova eliminação na tabela
+    INSERT INTO eliminacoes (codigoDisciplina,codigoMatricula, dataEliminacao, nomeInstituicao, status)
+    VALUES (@codigoDisciplina, @codigoMatricula , GETDATE(), @nomeInstituicao, 'Em análise' );
+
+    -- Definir a mensagem de saída
+    SET @saida = 'Eliminação inserida com sucesso.';
 END;
 GO
-
-
-DECLARE @saida VARCHAR(100);
-
--- Executar o procedimento para inserir uma eliminação
-EXEC sp_inserir_eliminacao 
-    @codigoDisciplina = 1001, 
-    @codigoMatricula = 1, 
-    @nomeInstituicao = 'Nome da Instituição', 
-    @saida = @saida OUTPUT;
-
--- Exibir a mensagem de saída
-PRINT @saida;
-SELECT * FROM periodoMatricula;
--- Selecionar todas as eliminações para verificar se uma nova entrada foi inserida
-SELECT * FROM matriculaDisciplina;
-
+--PROCEDURE OK
 CREATE PROCEDURE sp_update_eliminacao
     @acao CHAR(1),
     @codigo INT,
@@ -905,14 +877,7 @@ GO
 -- View OK
 CREATE VIEW vw_lista_chamada
 AS
-SELECT lc.codigo,
-       lc.codigoDisciplina,
-	   lc.codigoMatricula,
-	   lc.dataChamada,
-	   lc.presenca1,
-	   lc.presenca2,
-	   lc.presenca3,
-	   lc.presenca4
+SELECT lc.*
 FROM listaChamada lc
 GO
 
@@ -952,6 +917,7 @@ RETURN
             lc.presenca2,
             lc.presenca3,
             lc.presenca4,
+			lc.codigoProfessor,
             ROW_NUMBER() OVER (PARTITION BY lc.dataChamada ORDER BY lc.codigo) AS row_num
         FROM listaChamada lc
         WHERE lc.codigoDisciplina = @codigoDisciplina
@@ -964,7 +930,8 @@ RETURN
         presenca1,
         presenca2,
         presenca3,
-        presenca4
+        presenca4,
+		codigoProfessor
     FROM CTE
     WHERE row_num = 1
 );
@@ -1006,84 +973,77 @@ BEGIN
         VALUES (@codigo_disciplina, @codigo_matricula, 0.00, 'Cursando', 0)
         FETCH NEXT FROM c INTO @codigo_disciplina
     END
-
-    -- Fecha e desaloca o cursor
     CLOSE c
     DEALLOCATE c
 END
 GO
-
 -- FUNCTION OK
 CREATE FUNCTION fn_cabecalho_historico(@cpf CHAR(11))
 RETURNS TABLE
 AS
 RETURN
 (
-    SELECT 
-        a.*, 
-        m.dataMatricula
-    FROM 
-        aluno a
-    JOIN 
-        matricula m ON a.CPF = m.codigoAluno
-    JOIN 
-        curso c ON a.curso = c.codigo
-    WHERE 
-        a.CPF = @cpf
+    SELECT a.*, 
+	c.nome AS nomeCurso, 
+	m.dataMatricula
+	FROM aluno a, curso c, matricula m
+	WHERE a.CPF = @cpf AND
+	a.CPF = m.codigoAluno AND
+	a.curso = c.codigo
 );
 GO
---SELECT * FROM fn_cabecalho_historico('09129892031');
-
---SELECT column_name, data_type
---FROM information_schema.columns
---WHERE table_name = 'matriculaDisciplina';
 --FUNCTION OK
 CREATE FUNCTION fn_corpo_historico(@cpf CHAR(11))
 RETURNS TABLE
 AS
 RETURN
 (
-    SELECT 
-        d.codigo, 
-        d.nome AS nomeDisciplina, 
-        p.nome AS professor, 
-        md.notaFinal, 
-        --md.codigoDisciplina, 
-		
-		lc.codigoDisciplina,
-        lc.dataChamada, 
-        lc.presenca1, 
-        lc.presenca2, 
-        lc.presenca3, 
-        lc.presenca4, 
-        md.codigoMatricula, 
-        SUM(
-            CASE WHEN lc.presenca1 = 0 THEN 1 ELSE 0 END +
-            CASE WHEN lc.presenca2 = 0 THEN 1 ELSE 0 END +
-            CASE WHEN lc.presenca3 = 0 THEN 1 ELSE 0 END +
-            CASE WHEN lc.presenca4 = 0 THEN 1 ELSE 0 END
-        ) AS faltas
-    FROM aluno a
-    JOIN matricula m ON a.CPF = m.codigoAluno
-    JOIN matriculaDisciplina md ON md.CodigoMatricula = m.codigo
-    JOIN disciplina d ON d.codigo = md.codigoDisciplina
-    JOIN professor p ON p.codigo = d.codigoProfessor
-    LEFT JOIN listaChamada lc ON
-    (lc.codigoMatricula = m.codigo AND lc.codigoDisciplina = d.codigo)
-    WHERE a.CPF = @cpf AND md.situacao = 'Aprovado'
-    GROUP BY 
-        d.codigo, 
-        d.nome, 
-		p.nome,
-        lc.codigoDisciplina,
-        md.notaFinal, 
-        md.codigoDisciplina, 
-        md.codigoMatricula, 
-        lc.dataChamada, 
-        lc.presenca1, 
-        lc.presenca2, 
-        lc.presenca3, 
-        lc.presenca4
+    WITH CTE AS
+    (
+        SELECT 
+            d.codigo, 
+            d.nome AS nomeDisciplina, 
+            p.codigo AS codigoProfessor,
+            p.nome AS professor, 
+            md.notaFinal,    
+            lc.codigoDisciplina,
+            lc.dataChamada, 
+            lc.presenca1, 
+            lc.presenca2, 
+            lc.presenca3, 
+            lc.presenca4, 
+            md.codigoMatricula, 
+            SUM(
+                CASE WHEN lc.presenca1 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca2 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca3 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca4 = 0 THEN 1 ELSE 0 END
+            ) AS faltas,
+            ROW_NUMBER() OVER(PARTITION BY d.codigo, d.nome, p.nome, p.codigo, md.notaFinal, md.codigoDisciplina, md.codigoMatricula ORDER BY lc.dataChamada DESC) AS rn
+        FROM aluno a
+        JOIN matricula m ON a.CPF = m.codigoAluno
+        JOIN matriculaDisciplina md ON md.CodigoMatricula = m.codigo
+        JOIN disciplina d ON d.codigo = md.codigoDisciplina
+        JOIN professor p ON p.codigo = d.codigoProfessor
+        LEFT JOIN listaChamada lc ON
+        (lc.codigoMatricula = m.codigo AND lc.codigoDisciplina = d.codigo)
+        WHERE a.CPF = @cpf AND md.situacao = 'Aprovado'
+        GROUP BY 
+            d.codigo, 
+            d.nome, 
+            p.nome,
+            p.codigo, 
+            lc.codigoDisciplina,
+            md.notaFinal, 
+            md.codigoDisciplina, 
+            md.codigoMatricula, 
+            lc.dataChamada, 
+            lc.presenca1, 
+            lc.presenca2, 
+            lc.presenca3, 
+            lc.presenca4
+    )
+    SELECT * FROM CTE WHERE rn = 1
 );
 GO
 -- Verificar Procedure
@@ -1146,7 +1106,6 @@ RETURN
         )
 );
 GO
-
 --Procedure Referente a Matricula
 CREATE FUNCTION fn_buscar_matricula (@RA INT)
 RETURNS TABLE
@@ -1154,21 +1113,20 @@ AS
 RETURN
 (
     SELECT TOP 1        
-        m.*,
-		a.RA AS aluno,
-        a.nome AS nomeAluno
+        m.*,                -- Todos os campos da tabela 'matricula'
+        a.RA AS aluno,      -- RA do aluno
+        a.nome AS nomeAluno -- Nome do aluno
 
     FROM 
         matricula m 
     JOIN 
         aluno a 
     ON 
-        m.codigoAluno = a.CPF 
+        m.codigoAluno = a.CPF -- Assumindo que 'codigoAluno' refere-se ao CPF do aluno
     WHERE 
-        a.RA = @RA
+        a.RA = @RA -- Filtrando pelo RA do aluno
 );
 GO
-
 CREATE FUNCTION fn_BuscarCodigoDisciplinasMatriculadas (@codigoMatricula INT)
 RETURNS TABLE
 AS
@@ -1180,6 +1138,52 @@ RETURN
 );
 GO
 
+-- FUNCTION OK
+CREATE FUNCTION fn_listar_disciplinas_cursadas (@codigoMatricula INT)
+RETURNS @resultado TABLE (
+    codigo INT,
+    nome VARCHAR(255),
+    horasSemanais INT,
+    horarioInicio VARCHAR(5),
+    semestre INT,
+    diaSemana VARCHAR(50),
+    codigoCurso INT,
+	codigoProfessor INT
+)
+AS
+BEGIN
+    INSERT INTO @resultado
+    SELECT d.codigo, 
+           d.nome, 
+           d.horasSemanais, 
+           SUBSTRING(d.horarioInicio, 1, 5) AS horarioInicio, 
+           d.semestre, 
+           d.diaSemana, 
+           d.codigoCurso, 
+		   d.codigoProfessor
+    FROM disciplina d
+    JOIN matriculaDisciplina m ON m.codigoDisciplina = d.codigo
+    WHERE m.CodigoMatricula = @codigoMatricula;
+    
+    RETURN;
+END;
+GO
+CREATE FUNCTION fn_matricula_atual (@ra INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT TOP 1 
+        m.codigo,
+        m.codigoAluno,
+        m.dataMatricula,      
+		m.semestre
+    FROM matricula m
+    JOIN aluno a ON m.codigoAluno = a.CPF
+    WHERE a.ra = @ra
+    ORDER BY m.semestre DESC
+);
+GO
 INSERT INTO periodoMatricula (periodo_matricula_inicio, periodo_matricula_fim)VALUES 
     ('2024-01-01', '2025-01-01')
 GO

@@ -17,7 +17,10 @@ public interface IDisciplinaRepository extends JpaRepository<Disciplina, Integer
 	
 	//@Query(name = "Disciplina.FindListarParaMatricula", nativeQuery = true)
    // List<Disciplina> FindListarParaMatricula(String codigoAluno, int codigoCurso);
-//	/
+   //
+	
+	@Query(name = "Disciplina.findListarDisciplinasCursadas", nativeQuery = true)
+    List<Disciplina> findListarDisciplinasCursadas(int codigo);
 	
 	
 	@Procedure(name = "Disciplina.sp_iud_disciplina")
@@ -32,5 +35,7 @@ public interface IDisciplinaRepository extends JpaRepository<Disciplina, Integer
 		    @Param("diaSemana") String diaSemana,	    
 		    @Param("nome") String nome
 		);
+
+	//List<Disciplina> findListarDisciplinasCursadas(int codigo);
 
 }

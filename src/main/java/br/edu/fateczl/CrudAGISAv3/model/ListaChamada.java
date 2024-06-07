@@ -87,11 +87,16 @@ public class ListaChamada {
 	@Transient
 	private Aluno aluno;
 	
-	@Transient
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codigoDisciplina", referencedColumnName = "codigo", insertable = false, updatable = false)
 	private Disciplina disciplina;
 	
-	@Transient
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codigoProfessor", referencedColumnName = "codigo", insertable = false, updatable = false)
 	private Professor professor;
+	
+	@Transient
+	private Matricula matricula;
 	
 	
 	public String toString() {

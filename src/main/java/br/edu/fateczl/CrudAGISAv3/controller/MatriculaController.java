@@ -130,12 +130,8 @@ public class MatriculaController {
 	}
 
 	private Aluno buscarAluno(Aluno a) throws SQLException, ClassNotFoundException {
-		Optional<Aluno> alunoOptional = aRep.findById(a.getCPF());
-		if (alunoOptional.isPresent()) {
-			return alunoOptional.get();
-		} else {
-			return null;
-		}
+		a = aRep.findByRA(a.getRA());
+		return a;
 	}
 
 	private Disciplina buscarDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {

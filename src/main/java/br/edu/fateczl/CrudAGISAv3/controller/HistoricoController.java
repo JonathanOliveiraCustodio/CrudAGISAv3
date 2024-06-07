@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
 import br.edu.fateczl.CrudAGISAv3.model.ListaChamada;
 import br.edu.fateczl.CrudAGISAv3.model.Matricula;
+import br.edu.fateczl.CrudAGISAv3.model.Professor;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IListaChamadaRepository;
 
@@ -36,7 +37,9 @@ public class HistoricoController {
 	public ModelAndView historicoPost(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
 		String cpf = allRequestParam.get("CPF");
 		String erro = null;
+		
 		Matricula m = new Matricula();
+		Professor p = new Professor();
 		Aluno a = new Aluno();
 		List<ListaChamada> listaChamadas = new ArrayList<>();
 		a.setCPF(cpf);
@@ -47,6 +50,7 @@ public class HistoricoController {
 				a = null;
 				listaChamadas = null;
 			} else {
+				
 				listaChamadas = construirCorpo(a);
 			}
 		} catch (Exception e) {
@@ -55,13 +59,14 @@ public class HistoricoController {
 		model.addAttribute("erro", erro);
 		model.addAttribute("aluno", a);
 		model.addAttribute("matricula", m);
+		model.addAttribute("professor", p);
 		model.addAttribute("listaChamadas", listaChamadas);
 		return new ModelAndView("historico");
 	}
 
 	private List<ListaChamada> construirCorpo(Aluno a) throws ClassNotFoundException, SQLException {
 		List<ListaChamada> listaChamadas = new ArrayList<>();
-		listaChamadas = lcRep.findConstruirCorpo(a.getCPF());
+		listaChamadas = lcRep.findConstruirCorpo(a.getCPF());	
 		return listaChamadas;
 	}
 

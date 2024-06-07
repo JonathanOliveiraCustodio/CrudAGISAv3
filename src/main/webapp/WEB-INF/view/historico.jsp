@@ -88,8 +88,8 @@
 								<thead>
 									<tr>
 										<th>Código</th>
-										<th>Nome</th>
-										<th>Professor</th>
+										<th>Nome Disciplina</th>
+										<th>Nome Professor</th>
 										<th>Nota Final</th>
 										<th>Faltas</th>
 									</tr>

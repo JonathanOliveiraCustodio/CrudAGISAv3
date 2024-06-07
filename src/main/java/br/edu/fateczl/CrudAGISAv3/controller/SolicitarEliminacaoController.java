@@ -47,15 +47,9 @@ public class SolicitarEliminacaoController {
 	public ModelAndView analisarEliminacaoPost(@RequestParam Map<String, String> allRequestParam, ModelMap model) {
 
 		String cmd = allRequestParam.get("botao");
-	//	String codigo = allRequestParam.get("codigo");
-	//	String codigoMatricula = allRequestParam.get("codigoMatricula");
-	//	String codigoDisciplina = allRequestParam.get("codigoDisciplina");
-
 		String nomeInstituicao = allRequestParam.get("nomeInstituicao");
-
 		String disciplina = allRequestParam.get("disciplina");
 		String RA = allRequestParam.get("RA");
-
 		String saida = "";
 		String erro = "";
 
@@ -73,19 +67,12 @@ public class SolicitarEliminacaoController {
 		try {
 			a.setRA(Integer.parseInt(RA));
 			a = buscarAlunoRA(a, Integer.parseInt(RA));
-
 			m = buscarMatricula(m, Integer.parseInt(RA));
-			m.setCodigoAluno(a);
-
+			//m.setCodigoAluno(a);
 			if (cmd.contains("Solicitar")) {
-
 				e.setCodigoDisciplina(Integer.parseInt(disciplina));
 				e.setCodigoMatricula(m.getCodigo());
 				e.setNomeInstituicao(nomeInstituicao);
-
-				System.out.println(disciplina);
-				System.out.println(m.getCodigo());
-				System.out.println(nomeInstituicao);
 				saida = cadastrarEliminacao(e);
 				e = null;
 			}

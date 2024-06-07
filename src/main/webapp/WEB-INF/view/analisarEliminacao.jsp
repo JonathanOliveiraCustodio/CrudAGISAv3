@@ -31,7 +31,7 @@
 </head>
 <body>
 	<div>
-		<jsp:include page="headerProfessor.jsp" />
+		<jsp:include page="headerSecretaria.jsp" />
 	</div>
 	<div class="container py-4">
 		<div class="p-5 mb-4 bg-body-tertiary rounded-3 text-center shadow">

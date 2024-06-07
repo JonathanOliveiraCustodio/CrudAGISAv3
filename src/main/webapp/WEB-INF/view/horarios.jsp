@@ -71,7 +71,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
@@ -94,7 +94,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
@@ -117,7 +117,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
@@ -140,7 +140,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
@@ -163,7 +163,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
@@ -186,7 +186,7 @@
 											<td><div class="col py-2 px-1 border border-secondary rounded mb-1 bg-secondary-subtle text-secondary-emphasis">
 												${disciplina.codigo} - ${disciplina.nome}
 												<br>
-												${disciplina.horaInicio} - ${disciplina.horasSemanais} horas
+												${disciplina.horarioInicio} - ${disciplina.horasSemanais} horas
 												<br>
 												${disciplina.semestre}º semestre
 											</div></td>
