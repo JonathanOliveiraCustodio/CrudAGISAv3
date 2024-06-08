@@ -99,7 +99,7 @@
 										<tr>
 											<td><c:out value="${lc.disciplina.codigo }" /></td>
 											<td><c:out value="${lc.disciplina.nome }" /></td>
-											<td><c:out value="${lc.professor.nome }" /></td>
+											<td><c:out value="${lc.disciplina.professor.nome}" /></td> 
 											<td><c:out value="${lc.matriculaDisciplina.notaFinal }" /></td>
 											<td><c:out
 													value="${lc.matriculaDisciplina.totalFaltas }" /></td>

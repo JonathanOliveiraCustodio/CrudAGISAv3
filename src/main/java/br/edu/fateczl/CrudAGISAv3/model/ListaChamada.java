@@ -83,7 +83,7 @@ public class ListaChamada {
         @JoinColumn(name = "codigoDisciplina", referencedColumnName = "codigoDisciplina", insertable = false, updatable = false)
     })
     private MatriculaDisciplina matriculaDisciplina;
-	
+
 	@Transient
 	private Aluno aluno;
 	
@@ -91,12 +91,23 @@ public class ListaChamada {
     @JoinColumn(name = "codigoDisciplina", referencedColumnName = "codigo", insertable = false, updatable = false)
 	private Disciplina disciplina;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "codigoProfessor", referencedColumnName = "codigo", insertable = false, updatable = false)
+	@Transient
 	private Professor professor;
 	
 	@Transient
 	private Matricula matricula;
+	
+	@Transient
+	private String nomeProfessor;
+
+    // Getter e Setter para o nome do professor
+    public String getNomeProfessor() {
+        return nomeProfessor;
+    }
+
+    public void setNomeProfessor(String nomeProfessor) {
+        this.nomeProfessor = nomeProfessor;
+    }
 	
 	
 	public String toString() {
@@ -107,6 +118,7 @@ public class ListaChamada {
             return "null";
         }
     }
+	
 }
 
 

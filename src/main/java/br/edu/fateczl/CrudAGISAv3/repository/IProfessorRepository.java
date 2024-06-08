@@ -14,6 +14,10 @@ public interface IProfessorRepository extends JpaRepository<Professor, Integer> 
 	@Query(name = "Professor.findAll", nativeQuery = true)
     List<Professor> findAllProfessores();
 	
+	@Query(name = "Professor.findProfessorDisciplina", nativeQuery = true)
+	Professor findProfessorDisciplina(int codigo);
+	
+	
 	@Procedure(name = "Professor.sp_iud_professor")
 	String sp_iud_professor(
 			@Param("acao") String acao,

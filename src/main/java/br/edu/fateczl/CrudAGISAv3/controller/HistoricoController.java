@@ -13,17 +13,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
+import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.ListaChamada;
 import br.edu.fateczl.CrudAGISAv3.model.Matricula;
 import br.edu.fateczl.CrudAGISAv3.model.Professor;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
+import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IListaChamadaRepository;
+import br.edu.fateczl.CrudAGISAv3.repository.IProfessorRepository;
 
 @Controller
 public class HistoricoController {
 
 	@Autowired
 	IAlunoRepository aRep;
+	
+	@Autowired
+	IDisciplinaRepository dRep;
+	
+	@Autowired
+	IProfessorRepository pRep;
 	
 	@Autowired
 	IListaChamadaRepository lcRep;
@@ -65,15 +74,26 @@ public class HistoricoController {
 	}
 
 	private List<ListaChamada> construirCorpo(Aluno a) throws ClassNotFoundException, SQLException {
-		List<ListaChamada> listaChamadas = new ArrayList<>();
-		listaChamadas = lcRep.findConstruirCorpo(a.getCPF());	
-		return listaChamadas;
+	    List<ListaChamada> listaChamadas = lcRep.findConstruirCorpo(a.getCPF());
+	    
+	    for (ListaChamada chamada : listaChamadas) {
+	        Disciplina disciplina = chamada.getDisciplina();
+	        if (disciplina != null) {
+	            Professor professor = disciplina.getProfessor();
+	            if (professor != null) {
+	                chamada.setNomeProfessor(professor.getNome());
+	            }
+	        }
+	    }
+	    
+	    return listaChamadas;
 	}
 
 	private Aluno construirCabecalho(Aluno a) throws ClassNotFoundException, SQLException {
 		a = aRep.findconstruirCabecalhoHistorico(a.getCPF());
 		return a;
 	}
+
 	
 	
 

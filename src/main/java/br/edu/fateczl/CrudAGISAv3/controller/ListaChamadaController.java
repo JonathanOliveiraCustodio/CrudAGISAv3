@@ -18,16 +18,17 @@ import org.springframework.web.servlet.ModelAndView;
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.ListaChamada;
+import br.edu.fateczl.CrudAGISAv3.model.Matricula;
 import br.edu.fateczl.CrudAGISAv3.model.Professor;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IListaChamadaRepository;
+import br.edu.fateczl.CrudAGISAv3.repository.IMatriculaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IProfessorRepository;
 
 
 @Controller
 public class ListaChamadaController {
-
 
 	@Autowired
 	IDisciplinaRepository dRep;
@@ -37,6 +38,9 @@ public class ListaChamadaController {
 
 	@Autowired
 	IProfessorRepository pRep;
+	
+	@Autowired
+	IMatriculaRepository mRep;
 	
 	@Autowired
 	IAlunoRepository aRep;
@@ -68,7 +72,7 @@ public class ListaChamadaController {
 			model.addAttribute("listaChamada", lc);
 			model.addAttribute("disciplinas", disciplinas);
 			model.addAttribute("professores", professores);
-			model.addAttribute("disciplinas", disciplinas);
+	
 			model.addAttribute("datasChamadas", datasChamadas);
 		}
 
@@ -81,8 +85,6 @@ public class ListaChamadaController {
 		String professor = allRequestParam.get("professor");
 		String dataChamada = allRequestParam.get("dataChamada");
 		String disciplina = allRequestParam.get("disciplina");
-		String aluno = allRequestParam.get("aluno");
-
 		String saida = "";
 		String erro = "";
 
@@ -140,17 +142,16 @@ public class ListaChamadaController {
 				}
 
 				if (cmd.contains("Consultar")) {
-//					a.setCPF((aluno));
-//					a = buscarAluno(a);
-//					lc.setAluno(a);
-					d.setCodigo(Integer.parseInt(disciplina));
-					d = buscarDisciplina(d);
-					lc.setDisciplina(d);
-					lc.setDataChamada(Date.valueOf(dataChamada));
-					dataDaLista = dataChamada;
+				    d.setCodigo(Integer.parseInt(disciplina));
+				    d = buscarDisciplina(d);
+				    lc.setDisciplina(d);
+				    lc.setDataChamada(Date.valueOf(dataChamada));
+				    dataDaLista = dataChamada;
 
-					listasChamadas = consultarListaChamada(Integer.parseInt(disciplina), Date.valueOf(dataChamada));
+				    listasChamadas = consultarListaChamada(Integer.parseInt(disciplina), Date.valueOf(dataChamada));
+				    
 				}
+
 			}
 
 		} catch (SQLException | ClassNotFoundException e) {
@@ -190,14 +191,6 @@ public class ListaChamadaController {
 		}
 	}
 	
-	private Aluno buscarAluno(Aluno a) throws SQLException, ClassNotFoundException {
-		Optional<Aluno> alunoOptional = aRep.findById(a.getCPF());
-		if (alunoOptional.isPresent()) {
-			return alunoOptional.get();
-		} else {
-			return null;
-		}
-	}
 
 	private Disciplina buscarDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {
 		Optional<Disciplina> disciplinaOptional = dRep.findById(d.getCodigo());
@@ -209,9 +202,18 @@ public class ListaChamadaController {
 	}
 
 	private List<ListaChamada> consultarListaChamada(int codigoDisciplina, Date dataChamada)
-			throws ClassNotFoundException, SQLException {
-		List<ListaChamada> listachamada = lcRep.findConsultarListaChamada(codigoDisciplina, dataChamada);
-		return listachamada;
+	        throws ClassNotFoundException, SQLException {
+	    List<ListaChamada> listaChamada = lcRep.findConsultarListaChamada(codigoDisciplina, dataChamada);
+	    for (ListaChamada chamada : listaChamada) {
+	        Optional<Matricula> matriculaOptional = mRep.findById(chamada.getCodigoMatricula());
+	        if (matriculaOptional.isPresent()) {
+	            Matricula matricula = matriculaOptional.get();
+	            chamada.setMatricula(matricula);
+	            chamada.setAluno(matricula.getCodigoAluno());
+	        }
+	    }
+
+	    return listaChamada;
 	}
 
 	private List<Disciplina> listarDisciplinas(int codigoProfessor) throws ClassNotFoundException, SQLException {

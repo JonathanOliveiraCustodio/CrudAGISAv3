@@ -638,19 +638,20 @@ RETURN
            lc.presenca2,
            lc.presenca3,
            lc.presenca4, 
-		   lc.codigoProfessor,
-		   a.RA,
-		   a.CPF,
-           a.nome AS nomeAluno,
+           a.RA,
+           a.CPF,
+           a.nome AS nome,
            d.nome AS nomeDisciplina
     FROM listaChamada lc
-    JOIN matricula M ON lc.codigoMatricula = m.codigo
-    JOIN aluno a ON M.codigoAluno = a.CPF
-    JOIN disciplina d ON lc.codigoDisciplina = d.codigo
+    LEFT JOIN matricula M ON lc.codigoMatricula = m.codigo
+    LEFT JOIN aluno a ON M.codigoAluno = a.CPF
+    LEFT JOIN disciplina d ON lc.codigoDisciplina = d.codigo
     WHERE lc.codigoDisciplina = @codigoDisciplina
     AND lc.dataChamada = @dataChamada
 );
 GO
+
+SELECT * FROM fn_Lista_Chamada_Disciplina(1001,'2024-04-01')
 
 CREATE PROCEDURE sp_iud_listaChamada
     @acao CHAR(1),
@@ -686,6 +687,8 @@ BEGIN
     END
 END
 GO
+
+SELECT * FROM listaChamada
 
 CREATE FUNCTION fn_lista_eliminacoes()
 RETURNS TABLE
@@ -804,6 +807,20 @@ RETURN
 );
 GO
 
+CREATE FUNCTION fn_consultar_professor_disciplina(@codigo_disciplina INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT p.*
+    FROM professor p
+    INNER JOIN disciplina d ON p.codigo = d.codigoProfessor
+    WHERE d.codigo = @codigo_disciplina
+);
+GO
+
+SELECT * FROM fn_consultar_professor_disciplina(1001)
+
 CREATE PROCEDURE sp_inserir_eliminacao
     @codigoMatricula INT,
     @codigoDisciplina INT,
@@ -917,7 +934,6 @@ RETURN
             lc.presenca2,
             lc.presenca3,
             lc.presenca4,
-			lc.codigoProfessor,
             ROW_NUMBER() OVER (PARTITION BY lc.dataChamada ORDER BY lc.codigo) AS row_num
         FROM listaChamada lc
         WHERE lc.codigoDisciplina = @codigoDisciplina
@@ -930,8 +946,7 @@ RETURN
         presenca1,
         presenca2,
         presenca3,
-        presenca4,
-		codigoProfessor
+        presenca4
     FROM CTE
     WHERE row_num = 1
 );
@@ -984,8 +999,8 @@ AS
 RETURN
 (
     SELECT a.*, 
-	c.nome AS nomeCurso, 
-	m.dataMatricula
+	c.nome AS nomeCurso
+	--m.dataMatricula
 	FROM aluno a, curso c, matricula m
 	WHERE a.CPF = @cpf AND
 	a.CPF = m.codigoAluno AND
@@ -1004,7 +1019,7 @@ RETURN
             d.codigo, 
             d.nome AS nomeDisciplina, 
             p.codigo AS codigoProfessor,
-            p.nome AS professor, 
+            p.nome AS nomeProfessor, 
             md.notaFinal,    
             lc.codigoDisciplina,
             lc.dataChamada, 
@@ -1041,24 +1056,28 @@ RETURN
             lc.presenca1, 
             lc.presenca2, 
             lc.presenca3, 
-            lc.presenca4
+            lc.presenca4,
+            p.nome -- Adicionando o nome do professor
     )
     SELECT * FROM CTE WHERE rn = 1
 );
 GO
+
+
+ SELECT * FROM listaChamada
 -- Verificar Procedure
 CREATE PROCEDURE sp_nova_chamada
-    @codigoDisciplina INT
+    @codigo_disciplina INT
 AS
 BEGIN
     DECLARE @matricula INT,
 			@codigo INT,
 			@numero_aulas INT
-	SELECT @numero_aulas = d.horasSemanais FROM disciplina d WHERE d.codigo = @codigoDisciplina
+	SELECT @numero_aulas = d.horasSemanais FROM disciplina d WHERE d.codigo = @codigo_disciplina
     DECLARE c CURSOR FOR
         SELECT m.codigo
         FROM matriculaDisciplina md, matricula m
-        WHERE md.codigoDisciplina = @codigoDisciplina AND m.codigo = md.codigoDisciplina AND md.situacao = 'Cursando'
+        WHERE md.codigoDisciplina = @codigo_disciplina AND m.codigo = md.CodigoMatricula AND md.situacao = 'Cursando'
     OPEN c
     FETCH NEXT FROM c INTO @matricula
     WHILE @@FETCH_STATUS = 0
@@ -1068,13 +1087,14 @@ BEGIN
 		BEGIN
 			SET @codigo = 1
 		END
-        INSERT INTO listaChamada VALUES (@codigo, @matricula, @codigoDisciplina, GETDATE(), 1, 1, (CASE WHEN @numero_aulas > 2 THEN 1 ELSE NULL END), (CASE WHEN @numero_aulas > 3 THEN 1 ELSE NULL END))
+        INSERT INTO listaChamada VALUES (@codigo, @matricula, @codigo_disciplina, GETDATE(), 1, 1, (CASE WHEN @numero_aulas > 2 THEN 1 ELSE NULL END), (CASE WHEN @numero_aulas > 3 THEN 1 ELSE NULL END))
         FETCH NEXT FROM c INTO @matricula
     END
     CLOSE c
     DEALLOCATE c
 END
 GO
+SELECT * FROM listaChamada
 CREATE FUNCTION fn_listarParaMatricula (
     @codigoCurso INT,
     @codigoAluno VARCHAR(20)
@@ -1127,16 +1147,23 @@ RETURN
         a.RA = @RA -- Filtrando pelo RA do aluno
 );
 GO
-CREATE FUNCTION fn_BuscarCodigoDisciplinasMatriculadas (@codigoMatricula INT)
-RETURNS TABLE
+
+
+CREATE FUNCTION fn_buscar_professor_disciplina(@codigo_disciplina INT)
+RETURNS INT
 AS
-RETURN
-(
-    SELECT codigoDisciplina
-    FROM matriculaDisciplina
-    WHERE CodigoMatricula = @codigoMatricula
-);
+BEGIN
+    DECLARE @codigo_professor INT
+
+    SELECT @codigo_professor = p.codigo
+    FROM professor p
+    INNER JOIN disciplina d ON p.codigo = d.codigo
+    WHERE d.codigo = @codigo_disciplina
+
+    RETURN @codigo_professor
+END
 GO
+SELECT dbo.fn_buscar_professor_disciplina(1001);
 
 -- FUNCTION OK
 CREATE FUNCTION fn_listar_disciplinas_cursadas (@codigoMatricula INT)
@@ -1690,7 +1717,7 @@ VALUES
 (11, '97006247063', '2024-03-28', 1);
 GO
 
-SELECT * FROM matricula
+
 INSERT INTO matriculaDisciplina (codigoDisciplina, codigoMatricula, notaFinal, situacao, totalFaltas)
 VALUES
 (1001, 1, 8.5, 'Reprovado', 0),

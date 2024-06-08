@@ -39,6 +39,7 @@ public interface IListaChamadaRepository extends JpaRepository<ListaChamada, Int
 		    @Param("presenca2") int presenca2,
 		    @Param("presenca3") int presenca3,
 		    @Param("presenca4") int presenca4
+
 		    
 		);
 	
