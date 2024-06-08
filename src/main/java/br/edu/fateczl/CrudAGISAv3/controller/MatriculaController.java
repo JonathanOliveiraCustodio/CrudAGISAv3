@@ -187,7 +187,7 @@ public class MatriculaController {
 		List<Disciplina> disciplinas = new ArrayList<>();
 		Map<String, List<Disciplina>> disciplinasPorSemana = new HashMap<String, List<Disciplina>>();
 
-		// disciplinas = dRep.FindListarParaMatricula(a.getCPF(),a.getCurso().getCodigo());
+		 disciplinas = dRep.findListarParaMatricula(a.getCurso().getCodigo(),a.getCPF());
 		for (Disciplina d : disciplinas) {
 			List<Disciplina> temp = disciplinasPorSemana.get(d.getDiaSemana());
 			if (temp == null) {

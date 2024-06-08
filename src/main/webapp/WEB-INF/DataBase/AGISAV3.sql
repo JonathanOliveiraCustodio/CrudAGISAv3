@@ -4,9 +4,9 @@ GO
 USE SistemaAGISAV3
 GO
 
---SELECT column_name, data_type
---FROM information_schema.columns
---WHERE table_name = 'matriculaDisciplina';
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'disciplina';
 
 -- VIEW OK
 CREATE VIEW v_listar_cursos AS
@@ -1094,38 +1094,78 @@ BEGIN
     DEALLOCATE c
 END
 GO
-SELECT * FROM listaChamada
-CREATE FUNCTION fn_listarParaMatricula (
+
+SELECT 
+    d.codigo, 
+    d.nome AS nomeDisciplina, 
+    d.horasSemanais, 
+    SUBSTRING(d.horarioInicio, 1, 5) AS horarioInicio, 
+    d.semestre, 
+    d.diaSemana 
+FROM 
+    disciplina d 
+INNER JOIN
+    curso c ON d.codigoCurso = c.codigo
+INNER JOIN
+    aluno a ON c.codigo = a.curso
+WHERE 
+    a.RA = 2016456
+    AND d.codigo NOT IN (
+        SELECT 
+            md.codigoDisciplina 
+        FROM 
+            matriculaDisciplina md
+        INNER JOIN 
+            matricula m ON md.codigoMatricula = m.codigo
+        INNER JOIN 
+            aluno a ON m.codigoAluno = a.CPF
+        WHERE 
+            md.situacao = 'Aprovado' 
+            AND a.RA = 2016456
+    );
+
+-- Verificar
+CREATE FUNCTION fn_ListarDisciplinasParaMatricula (
     @codigoCurso INT,
-    @codigoAluno VARCHAR(20)
+    @RA INT 
 )
 RETURNS TABLE
 AS
 RETURN
 (
     SELECT 
+        c.codigo AS codigoCurso,
         d.codigo, 
         d.nome AS nomeDisciplina, 
         d.horasSemanais, 
         SUBSTRING(d.horarioInicio, 1, 5) AS horarioInicio, 
         d.semestre, 
-        d.diaSemana
+        d.diaSemana 
     FROM 
         disciplina d 
+    INNER JOIN
+        curso c ON d.codigoCurso = c.codigo
+    INNER JOIN
+        aluno a ON c.codigo = a.curso
     WHERE 
-        d.codigoCurso = @codigoCurso 
+        a.RA = @RA
+        AND c.codigo = @codigoCurso
         AND d.codigo NOT IN (
-            SELECT codigoDisciplina 
-            FROM matriculaDisciplina 
-            WHERE situacao = 'Aprovado' 
-            AND CodigoMatricula IN (
-                SELECT codigo 
-                FROM matricula 
-                WHERE codigoAluno = @codigoAluno
-            )
+            SELECT 
+                md.codigoDisciplina 
+            FROM 
+                matriculaDisciplina md
+            INNER JOIN 
+                matricula m ON md.codigoMatricula = m.codigo
+            INNER JOIN 
+                aluno a ON m.codigoAluno = a.CPF
+            WHERE 
+                md.situacao = 'Aprovado' 
+                AND a.RA = @RA
         )
 );
 GO
+
 --Procedure Referente a Matricula
 CREATE FUNCTION fn_buscar_matricula (@RA INT)
 RETURNS TABLE
