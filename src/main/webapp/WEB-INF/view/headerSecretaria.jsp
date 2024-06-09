@@ -25,6 +25,7 @@
             <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="${pageContext.request.contextPath}/analisarEliminacao">Solicitações de Dispensas</a></li>
             <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="${pageContext.request.contextPath}/periodoMatricula">Periodo de Matrícula</a></li>
             <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="${pageContext.request.contextPath}/historico">Histórico</a></li>
+            <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="${pageContext.request.contextPath}/relatorioHistoricoAluno">Relatório Aluno</a></li>
         </ul>
   	</header>
   </div>

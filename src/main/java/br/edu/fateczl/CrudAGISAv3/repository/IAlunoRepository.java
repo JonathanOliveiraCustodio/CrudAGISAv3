@@ -22,6 +22,8 @@ public interface IAlunoRepository extends JpaRepository<Aluno, String> {
 	@Query(name = "Aluno.findconstruirCabecalhoHistorico", nativeQuery = true)
 	Aluno findconstruirCabecalhoHistorico(String cpf);
 	
+	List<Aluno> findAllByOrderByNomeAsc();
+	
 	@Procedure(name = "Aluno.sp_iud_aluno")
 	String sp_iud_aluno(
 			@Param("acao") String acao,
