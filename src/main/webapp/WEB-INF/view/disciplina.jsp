@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html>
@@ -22,19 +22,45 @@
 		}
 		return true;
 	}
-</script>
-<script>
 	function editarDisciplina(codigo) {
 		window.location.href = 'disciplina?cmd=alterar&codigo=' + codigo;
 	}
 	function excluirDisciplina(codigo, codigoProfessor, codigoCurso) {
 		if (confirm("Tem certeza que deseja excluir essa Disciplina?")) {
-	
+
 			var url = 'disciplina?cmd=excluir&codigo=' + codigo
 					+ '&codigoProfessor=' + codigoProfessor + '&codigoCurso='
 					+ codigoCurso;
 			window.location.href = url;
 		}
+	}
+
+	function abrirEmNovaAba(actionUrl) {
+		const tipoListar = document.getElementById('tipoListar').value;
+		const valorPesquisa = document.getElementById('valorPesquisa').value;
+
+		// Create a new form element
+		const newForm = document.createElement('form');
+		newForm.method = 'post';
+		newForm.action = actionUrl;
+		newForm.target = '_blank'; // Open in a new tab
+
+		// Append tipoListar and valorPesquisa to the new form
+		const hiddenField1 = document.createElement('input');
+		hiddenField1.type = 'hidden';
+		hiddenField1.name = 'tipoListar';
+		hiddenField1.value = tipoListar;
+		newForm.appendChild(hiddenField1);
+
+		const hiddenField2 = document.createElement('input');
+		hiddenField2.type = 'hidden';
+		hiddenField2.name = 'valorPesquisa';
+		hiddenField2.value = valorPesquisa;
+		newForm.appendChild(hiddenField2);
+
+		// Append the new form to the body and submit it
+		document.body.appendChild(newForm);
+		newForm.submit();
 	}
 </script>
 
@@ -144,7 +170,33 @@
 								</c:forEach>
 							</select>
 						</div>
-						<div class="col-md-3"></div>
+
+						<div class="row g-3 mt-3">
+							<label for="tipoPesquisa" class="form-label col-md-1">Tipo
+								de Listar:</label>
+							<div class="col-md-3">
+								<select class="form-select" id="tipoListar" name="tipoListar">
+									<option value="">Escolha um Tipo de Listar</option>
+									<option value="todas">Todas</option>
+									<option value="nome">Nome</option>
+									<option value="diaSemana">Dia da Semana</option>
+									<option value="curso">Curso</option>
+									<option value="professor">Professor</option>
+								</select>
+							</div>
+							<label for="valorPesquisa" class="form-label col-md-1">Pesquisa:</label>
+							<div class="col-md-3">
+								<input type="text" class="form-control" id="valorPesquisa"
+									name="valorPesquisa">
+							</div>
+
+							<div class="col-md-5 d-grid text-center">
+								<button type="button" id="gerarRelatorioBotao"
+									class="btn btn-secondary"
+									onclick="abrirEmNovaAba('disciplinaRelatorio')">Relatório</button>
+							</div>
+						</div>
+
 						<br />
 						<div class="col-md-2 d-grid text-center">
 							<input type="submit" id="botao" name="botao" value="Cadastrar"
@@ -197,7 +249,13 @@
 					<tr>
 						<th class="titulo-tabela" colspan="9"
 							style="text-align: center; font-size: 23px;">Lista de
-							Disciplinas</th>
+							Disciplinas <c:if test="${not empty tipoListar}">
+        - Tipo de Pesquisa: <c:out value="${tipoListar}" />
+							</c:if> <c:if test="${not empty valorPesquisa}">
+        - Parâmetros de busca: <c:out value="${valorPesquisa}" />
+							</c:if>
+						</th>
+
 					</tr>
 					<tr>
 						<th>Selecionar</th>
@@ -209,7 +267,7 @@
 						<th>Dia Semana</th>
 						<th>Professor</th>
 						<th>Curso</th>
-				
+
 					</tr>
 				</thead>
 				<tbody class="table-group-divider">
@@ -226,7 +284,7 @@
 							<td><c:out value="${d.diaSemana}" /></td>
 							<td><c:out value="${d.professor.nome}" /></td>
 							<td><c:out value="${d.curso.nome}" /></td>
-						
+
 
 						</tr>
 					</c:forEach>

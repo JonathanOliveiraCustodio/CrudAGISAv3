@@ -819,7 +819,6 @@ RETURN
 );
 GO
 
-SELECT * FROM fn_consultar_professor_disciplina(1001)
 
 CREATE PROCEDURE sp_inserir_eliminacao
     @codigoMatricula INT,
@@ -1016,6 +1015,7 @@ RETURN
     WITH CTE AS
     (
         SELECT 
+		   
             d.codigo, 
             d.nome AS nomeDisciplina, 
             p.codigo AS codigoProfessor,
@@ -1063,8 +1063,98 @@ RETURN
 );
 GO
 
+CREATE FUNCTION fn_historico(@cpf CHAR(11))
+RETURNS TABLE
+AS
+RETURN
+(
+    WITH CTE AS
+    (
+        SELECT 
+		    a.nome,
+			a.RA,
+            d.codigo, 
+            d.nome AS nomeDisciplina, 
+            p.codigo AS codigoProfessor,
+            p.nome AS nomeProfessor, 
+            md.notaFinal,    
+            lc.codigoDisciplina,
+            lc.dataChamada, 
+            lc.presenca1, 
+            lc.presenca2, 
+            lc.presenca3, 
+            lc.presenca4, 
+            m.dataMatricula,
+            md.situacao,	    
+ 	    	md.codigoMatricula, 		
+            SUM(
+                CASE WHEN lc.presenca1 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca2 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca3 = 0 THEN 1 ELSE 0 END +
+                CASE WHEN lc.presenca4 = 0 THEN 1 ELSE 0 END
+            ) AS faltas,
+            ROW_NUMBER() OVER(PARTITION BY d.codigo, d.nome, p.nome, p.codigo, md.notaFinal, md.codigoDisciplina, md.codigoMatricula ORDER BY lc.dataChamada DESC) AS rn
+        FROM aluno a
+        JOIN matricula m ON a.CPF = m.codigoAluno
+        JOIN matriculaDisciplina md ON md.CodigoMatricula = m.codigo
+        JOIN disciplina d ON d.codigo = md.codigoDisciplina
+        JOIN professor p ON p.codigo = d.codigoProfessor
+        LEFT JOIN listaChamada lc ON
+        (lc.codigoMatricula = m.codigo AND lc.codigoDisciplina = d.codigo)
+        WHERE a.CPF = @cpf -- AND md.situacao = 'Aprovado'
+        GROUP BY 
+            d.codigo, 
+            d.nome, 
+            p.nome,
+            p.codigo, 
+            lc.codigoDisciplina,
+            md.notaFinal, 
+            md.codigoDisciplina, 
+            md.codigoMatricula, 
+			md.situacao,
+            lc.dataChamada, 
+            lc.presenca1, 
+            lc.presenca2, 
+            lc.presenca3, 
+            lc.presenca4,
+            p.nome,
+			a.nome,
+			a.RA,
+			m.dataMatricula
+    )
+    SELECT * FROM CTE WHERE rn = 1
+);
+GO
 
- SELECT * FROM listaChamada
+CREATE FUNCTION fn_disciplinas_parametro
+(
+    @tipoPesquisa NVARCHAR(50),
+    @valorPesquisa NVARCHAR(100)
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT d.*,
+	p.nome AS nomeProfessor,
+	c.nome AS nomeCurso 
+    FROM Disciplina d
+    INNER JOIN professor p ON d.codigoProfessor = p.codigo
+    INNER JOIN curso c ON d.codigoCurso = c.codigo
+    WHERE
+        (
+               (@tipoPesquisa = 'codigo' AND CAST(d.codigo AS NVARCHAR(100)) LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'nome' AND d.nome LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'horarioInicio' AND d.horarioInicio LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'diaSemana' AND d.diaSemana LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'semestre' AND CAST(d.semestre AS NVARCHAR(100)) LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'horasSemanais' AND CAST(d.horasSemanais AS NVARCHAR(100)) LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'professor' AND p.nome LIKE '%' + @valorPesquisa + '%')
+            OR (@tipoPesquisa = 'curso' AND c.nome LIKE '%' + @valorPesquisa + '%')
+        )
+)
+
+GO
 -- Verificar Procedure
 CREATE PROCEDURE sp_nova_chamada
     @codigo_disciplina INT

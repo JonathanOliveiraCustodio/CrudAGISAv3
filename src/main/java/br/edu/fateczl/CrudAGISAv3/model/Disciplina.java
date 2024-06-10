@@ -27,9 +27,12 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.JOINED)
 
 @NamedNativeQuery(name = "Disciplina.findAll", query = "SELECT * FROM v_listar_disciplinas", resultClass = Disciplina.class)
+
 @NamedNativeQuery(name = "Disciplina.findListarDisciplinasCursadas", query = "SELECT * FROM fn_listar_disciplinas_cursadas(?1)", resultClass = Disciplina.class)
 
 @NamedNativeQuery(name = "Disciplina.findListarParaMatricula", query = "SELECT * FROM fn_listarParaMatricula(?1,?2)", resultClass = Disciplina.class)
+
+@NamedNativeQuery(name = "Disciplina.findDisciplinasParametro", query = "SELECT * FROM fn_disciplinas_parametro(?1,?2)", resultClass = Disciplina.class)
 
 @NamedStoredProcedureQuery(name = "Disciplina.sp_iud_disciplina", procedureName = "sp_iud_disciplina ", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "acao", type = String.class),

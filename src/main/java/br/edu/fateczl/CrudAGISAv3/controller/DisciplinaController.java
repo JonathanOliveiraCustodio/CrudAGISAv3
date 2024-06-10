@@ -1,28 +1,51 @@
 package br.edu.fateczl.CrudAGISAv3.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
 import br.edu.fateczl.CrudAGISAv3.model.Curso;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Professor;
 import br.edu.fateczl.CrudAGISAv3.repository.ICursoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IProfessorRepository;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.JasperRunManager;
+import net.sf.jasperreports.engine.util.JRLoader;
 
 @Controller
 public class DisciplinaController {
 
+	@Autowired
+	DataSource ds; 
+	
 	@Autowired
 	IDisciplinaRepository dRep;
 
@@ -54,14 +77,11 @@ public class DisciplinaController {
 
 			if (cmd != null) {
 				if (cmd.contains("alterar")) {
-
 					d.setCodigo(Integer.parseInt(codigo));
 					d = buscarDisciplina(d);
-
 				} else if (cmd.contains("excluir")) {
 					d.setCodigo(Integer.parseInt(codigo));
 					saida = excluirDisciplina(d);
-
 				}
 				disciplinas = listarDisciplinas();
 			}
@@ -92,6 +112,8 @@ public class DisciplinaController {
 		String diaSemana = allRequestParam.get("diaSemana");
 		String professor = allRequestParam.get("professor");
 		String curso = allRequestParam.get("curso");
+		String tipoListar = allRequestParam.get("tipoListar");
+		String valorPesquisa = allRequestParam.get("valorPesquisa");
 
 		// saida
 		String saida = "";
@@ -106,7 +128,6 @@ public class DisciplinaController {
 		List<Disciplina> disciplinas = new ArrayList<>();
 
 		try {
-
 			if (!cmd.contains("Listar")) {
 				p.setCodigo(Integer.parseInt(professor));
 				p = buscarProfessor(p);
@@ -136,14 +157,13 @@ public class DisciplinaController {
 				d = null;
 			}
 			if (cmd.contains("Excluir")) {
-
 				saida = excluirDisciplina(d);
 				d = null;
 			}
 			if (cmd.contains("Buscar")) {
 				d = buscarDisciplina(d);
 				if (d == null) {
-					saida = "Nenhuma disciplina encontrado com o código especificado.";
+					saida = "Nenhuma disciplina encontrada com o código especificado.";
 					d = null;
 				}
 			}
@@ -152,11 +172,19 @@ public class DisciplinaController {
 			}
 
 			if (cmd.contains("Listar")) {
-				disciplinas = listarDisciplinas();
+				if ("nome".equals(tipoListar) || "diaSemana".equals(tipoListar) || "curso".equals(tipoListar)
+						|| "professor".equals(tipoListar)) {
+					disciplinas = dRep.findDisciplinasParametro(tipoListar, valorPesquisa);
+				} else {
+					disciplinas = listarDisciplinas();
+					tipoListar = "Todas";
+					valorPesquisa = "N/A";
+				}
 			}
 
 		} catch (SQLException | ClassNotFoundException e) {
 			erro = e.getMessage();
+
 		} finally {
 			model.addAttribute("saida", saida);
 			model.addAttribute("erro", erro);
@@ -164,76 +192,91 @@ public class DisciplinaController {
 			model.addAttribute("professores", professores);
 			model.addAttribute("cursos", cursos);
 			model.addAttribute("disciplinas", disciplinas);
-
+			model.addAttribute("tipoListar", tipoListar);
+			model.addAttribute("valorPesquisa", valorPesquisa);
 		}
 
 		return new ModelAndView("disciplina");
 	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(name = "disciplinaRelatorio", value = "/disciplinaRelatorio", method = RequestMethod.POST)
+	public ResponseEntity relatorioPost(@RequestParam Map<String, String> allRequestParam) {
+		String erro = "";
+		Map<String, Object> paramRelatorio =  new HashMap<String,Object>();
+		paramRelatorio.put("tipoListar", allRequestParam.get("tipoListar"));
+	    paramRelatorio.put("valorPesquisa", allRequestParam.get("valorPesquisa"));
+		
+		byte [] bytes = null;
+		
+		InputStreamResource resource = null;
+		HttpStatus status = null;
+		HttpHeaders header = new HttpHeaders();
+		
+		try {
+			Connection c = DataSourceUtils.getConnection(ds);
+			File arquivo = ResourceUtils.getFile("classpath:reports/RelatorioDisciplinas.jasper");
+		
+			JasperReport report = (JasperReport) JRLoader.loadObjectFromFile(arquivo.getAbsolutePath());
+			bytes = JasperRunManager.runReportToPdf(report, paramRelatorio, c);
+		 } catch (FileNotFoundException | JRException e) {
+			e.printStackTrace();
+			erro = e.getMessage();
+			status = HttpStatus.BAD_REQUEST;
+		} finally {
+			 if (erro.equals("")) {
+				 InputStream inputStream = new ByteArrayInputStream(bytes);
+				 resource = new InputStreamResource(inputStream);
+				 header.setContentLength(bytes.length);
+				 header.setContentType(MediaType.APPLICATION_PDF);
+				 status = HttpStatus.OK;		 
+			 }
+		}
+		return new ResponseEntity(resource, header,status);
+	}
+
 
 	private String cadastrarDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {
-		String saida = dRep.sp_iud_disciplina("I", d.getCodigo(), d.getCurso().getCodigo(),
-				d.getProfessor().getCodigo(), d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(),
-				d.getDiaSemana(), d.getNome());
-		return saida;
-
+		return dRep.sp_iud_disciplina("I", d.getCodigo(), d.getCurso().getCodigo(), d.getProfessor().getCodigo(),
+				d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(), d.getDiaSemana(), d.getNome());
 	}
 
 	private String alterarDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {
-		String saida = dRep.sp_iud_disciplina("U", d.getCodigo(), d.getCurso().getCodigo(),
-				d.getProfessor().getCodigo(), d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(),
-				d.getDiaSemana(), d.getNome());
-		return saida;
-
+		return dRep.sp_iud_disciplina("U", d.getCodigo(), d.getCurso().getCodigo(), d.getProfessor().getCodigo(),
+				d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(), d.getDiaSemana(), d.getNome());
 	}
 
 	private String excluirDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {
-		String saida = dRep.sp_iud_disciplina("D", d.getCodigo(), d.getCurso().getCodigo(),
-				d.getProfessor().getCodigo(), d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(),
-				d.getDiaSemana(), d.getNome());
-		return saida;
-
+		return dRep.sp_iud_disciplina("D", d.getCodigo(), d.getCurso().getCodigo(), d.getProfessor().getCodigo(),
+				d.getHorasSemanais(), d.getSemestre(), d.getHorarioInicio(), d.getDiaSemana(), d.getNome());
 	}
 
 	private Disciplina buscarDisciplina(Disciplina d) throws SQLException, ClassNotFoundException {
 		Optional<Disciplina> disciplinaOptional = dRep.findById(d.getCodigo());
-		if (disciplinaOptional.isPresent()) {
-			return disciplinaOptional.get();
-		} else {
-			return null;
-		}
+		return disciplinaOptional.orElse(null);
 	}
 
 	private List<Disciplina> listarDisciplinas() throws SQLException, ClassNotFoundException {
 		List<Disciplina> disciplinas = dRep.findAllDisciplinas();
+		System.out.println("Número de disciplinas listadas: " + disciplinas.size());
 		return disciplinas;
 	}
 
 	private Professor buscarProfessor(Professor p) throws SQLException, ClassNotFoundException {
 		Optional<Professor> professorOptional = pRep.findById(p.getCodigo());
-		if (professorOptional.isPresent()) {
-			return professorOptional.get();
-		} else {
-			return null;
-		}
+		return professorOptional.orElse(null);
 	}
 
 	private List<Professor> listarProfessores() throws SQLException, ClassNotFoundException {
-		List<Professor> professores = pRep.findAllProfessores();
-		return professores;
+		return pRep.findAllProfessores();
 	}
 
 	private Curso buscarCurso(Curso c) throws SQLException, ClassNotFoundException {
-		Optional<Curso> produtoOptional = cRep.findById(c.getCodigo());
-		if (produtoOptional.isPresent()) {
-			return produtoOptional.get();
-		} else {
-			return null;
-		}
+		Optional<Curso> cursoOptional = cRep.findById(c.getCodigo());
+		return cursoOptional.orElse(null);
 	}
 
 	private List<Curso> listarCursos() throws SQLException, ClassNotFoundException {
-		List<Curso> cursos = cRep.findAllCursos();
-		return cursos;
+		return cRep.findAllCursos();
 	}
-
 }
