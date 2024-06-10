@@ -6,7 +6,7 @@ GO
 
 SELECT column_name, data_type
 FROM information_schema.columns
-WHERE table_name = 'disciplina';
+WHERE table_name = 'notaParcial';
 
 -- VIEW OK
 CREATE VIEW v_listar_cursos AS
@@ -650,8 +650,17 @@ RETURN
     AND lc.dataChamada = @dataChamada
 );
 GO
+SELECT * FROM notaParcial
 
-SELECT * FROM fn_Lista_Chamada_Disciplina(1001,'2024-04-01')
+CREATE PROCEDURE sp_iud_nota
+	@avaliacaoCodigo INT,
+	@codigoDisciplina INT,
+	@codigoMatricula INT,
+	@nota FLOAT
+AS
+BEGIN
+	UPDATE notaParcial SET nota = @nota WHERE avaliacaoCodigo = @avaliacaoCodigo AND codigoDisciplina = @codigoDisciplina AND codigoMatricula = @codigoMatricula
+END
 
 CREATE PROCEDURE sp_iud_listaChamada
     @acao CHAR(1),
@@ -1341,6 +1350,7 @@ RETURN
     ORDER BY m.semestre DESC
 );
 GO
+
 CREATE FUNCTION fn_avaliacao (@codigo INT)
 RETURNS TABLE
 AS
@@ -1355,20 +1365,19 @@ CREATE PROCEDURE sp_buscar_nota_aluno @avaliacaoCodigo INT, @codigoDisciplina IN
 AS
 BEGIN
     DECLARE @codigo INT
-	DECLARE @cont INT
 
-    SELECT @codigo = codigo
+    SELECT @codigo = avaliacaoCodigo
     FROM notaParcial
     WHERE avaliacaoCodigo = @avaliacaoCodigo AND codigoDisciplina = @codigoDisciplina AND codigoMatricula = @codigoMatricula
 
     IF @codigo IS NULL
     BEGIN
-		SELECT @cont = (ISNULL(COUNT(codigo), 0) + 1) FROM notaParcial
-        INSERT INTO notaParcial
-        VALUES (@avaliacaoCodigo, GETDATE(), 0.0, @codigoDisciplina, @codigoMatricula, @cont)
+        INSERT INTO notaParcial (avaliacaoCodigo, codigoDisciplina, codigoMatricula, dataDeLancamento, nota)
+        VALUES (@avaliacaoCodigo, @codigoDisciplina, @codigoMatricula,GETDATE(), 0.0)
     END
 END
 GO
+
 INSERT INTO periodoMatricula (periodo_matricula_inicio, periodo_matricula_fim)VALUES 
     ('2024-01-01', '2025-01-01')
 GO
@@ -2009,8 +2018,3 @@ VALUES
 (59, 9, 1001, '2024-04-03', 1, 0, 1, 0),
 (60, 10, 1002, '2024-04-04', 0, 1, 0, 1);
 GO
-
-INSERT INTO avaliacao VALUES
-(1, 'P1', 0.3, 1001),
-(2, 'P2', 0.5, 1001),
-(3, 'T', 0.2, 1001)
