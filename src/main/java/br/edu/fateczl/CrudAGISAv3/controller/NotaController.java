@@ -112,11 +112,21 @@ public class NotaController {
 				d = buscarDisciplina(d);
 			}
 			if (cmd != null) {
+				avaliacoes = consultarAvaliacao(d.getCodigo());
 				if (cmd.contains("Consultar")) {
-					avaliacoes = consultarAvaliacao(d.getCodigo());
 					matriculas = consultarMatricula(d.getCodigo(), avaliacoes);
 				} else if(cmd.contains("Alterar")) {
-					//Removido. Quebrou ao mover para main.
+					for ( String key : allRequestParam.keySet()) {
+						if (!key.contains("nota")) {
+							continue;
+						}
+						Double nota = Double.parseDouble(allRequestParam.get(key));
+						int matricula = Integer.parseInt(key.substring(6, key.lastIndexOf("]")));
+						int avaliacao = Integer.parseInt(key.substring(4, 5)) - 1;
+						inRep.sp_iud_nota(avaliacoes.get(avaliacao).getCodigo(), d.getCodigo(), matricula, nota);
+					}
+					avaliacoes = null;
+					saida = "Notas alteradas com sucesso!";
 				}
 
 			}

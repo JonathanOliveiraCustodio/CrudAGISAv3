@@ -118,9 +118,16 @@
 									<tbody class="table-group-divider">
 										<c:forEach var="m" items="${matriculas }">
 											<tr id="${m.codigoMatricula.codigo }">
-												<td><c:out value="${m.n1.nota }" /></td>
-												<td><c:out value="${m.n2.nota }" /></td>
-												<td><c:out value="${m.n3.nota }" /></td>
+											<td><c:out value="${m.codigoMatricula.aluno.nome}"></c:out></td>
+												<td><input class="form-control" type="number"  name="nota1[${m.codigoMatricula.codigo}]"
+								name="nota1" placeholder="0" step='0.1'
+								value='<c:out value="${m.n1.nota }"></c:out>'></td>
+												<td><input class="form-control" type="number"  name="nota2[${m.codigoMatricula.codigo}]"
+								name="nota2" placeholder="0" step='0.1'
+								value='<c:out value="${m.n2.nota }"></c:out>'></td>
+												<td><input class="form-control" type="number"  name="nota3[${m.codigoMatricula.codigo}]"
+								name="nota3" placeholder="0" step='0.1'
+								value='<c:out value="${m.n3.nota }"></c:out>'></td>
 											</tr>
 										</c:forEach>
 									</tbody>
