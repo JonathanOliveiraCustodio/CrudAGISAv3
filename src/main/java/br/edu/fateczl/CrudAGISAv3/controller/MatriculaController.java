@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import br.edu.fateczl.CrudAGISAv3.model.Aluno;
 import br.edu.fateczl.CrudAGISAv3.model.Disciplina;
 import br.edu.fateczl.CrudAGISAv3.model.Matricula;
+import br.edu.fateczl.CrudAGISAv3.model.MatriculaDisciplina;
 import br.edu.fateczl.CrudAGISAv3.model.PeriodoMatricula;
 import br.edu.fateczl.CrudAGISAv3.repository.IAlunoRepository;
 import br.edu.fateczl.CrudAGISAv3.repository.IDisciplinaMatriculadaRepotitory;
@@ -89,7 +91,7 @@ public class MatriculaController {
 					disciplinasPorSemana = disciplinasDisponiveis(a);
 					m = buscarMatriculaAtual(a);
 
-					if (m.getCodigo() == 0) {
+					if (m == null || m.getCodigo() == 0) {
 						m = novaMatricula(a);
 					} else {
 						codigosDisciplinasMatriculadas = buscarDisciplinasMatriculadasCodigos(m);
@@ -117,6 +119,7 @@ public class MatriculaController {
 
 		} catch (Exception e) {
 			erro = e.getMessage();
+			e.printStackTrace();
 		}
 
 		model.addAttribute("saida", saida);
@@ -126,6 +129,9 @@ public class MatriculaController {
 		model.addAttribute("periodoValido", periodoValido);
 		model.addAttribute("disciplinas", disciplinasPorSemana);
 		model.addAttribute("disciplinasMatriculadas", codigosDisciplinasMatriculadas);
+		System.out.println(disciplinasPorSemana.keySet());
+		System.out.println(disciplinasPorSemana.values());
+		System.out.println(codigosDisciplinasMatriculadas);
 		return new ModelAndView("matricula");
 	}
 
@@ -167,13 +173,19 @@ public class MatriculaController {
 		PeriodoMatricula p = new PeriodoMatricula();
 		p = pmRep.findConsultaPeriodoMatricula();
 		Matricula m = new Matricula();
-		m = mRep.findBuscarMatriculaAluno(a, p.getPeriodoMatriculaInicio(), p.getPeriodoMatriculaFim());
+		m = mRep.findBuscarMatriculaAluno(a.getCPF(), p.getPeriodoMatriculaInicio(), p.getPeriodoMatriculaFim());
 		return m;
 	}
 
 	private List<Integer> buscarDisciplinasMatriculadasCodigos(Matricula m)
 			throws ClassNotFoundException, SQLException {
-		List<Integer> codigos = dmRep.findBuscarCodigoDisciplinasMatriculadas(m.getCodigo());
+		List<MatriculaDisciplina> matriculaDisciplinas = dmRep.findBuscarCodigoDisciplinasMatriculadas(m.getCodigo());
+
+		List<Integer> codigos = new ArrayList<>();
+		for (MatriculaDisciplina mD : matriculaDisciplinas) {
+			codigos.add(mD.getCodigoDisciplina().getCodigo());
+		}
+
 		return codigos;
 	}
 
@@ -187,7 +199,7 @@ public class MatriculaController {
 		List<Disciplina> disciplinas = new ArrayList<>();
 		Map<String, List<Disciplina>> disciplinasPorSemana = new HashMap<String, List<Disciplina>>();
 
-		 disciplinas = dRep.findListarParaMatricula(a.getCurso().getCodigo(),a.getCPF());
+		disciplinas = dRep.findListarParaMatricula(a.getCurso().getCodigo(), a.getCPF());
 		for (Disciplina d : disciplinas) {
 			List<Disciplina> temp = disciplinasPorSemana.get(d.getDiaSemana());
 			if (temp == null) {

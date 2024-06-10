@@ -1341,6 +1341,34 @@ RETURN
     ORDER BY m.semestre DESC
 );
 GO
+CREATE FUNCTION fn_avaliacao (@codigo INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT *
+    FROM avaliacao
+    WHERE codigoDisciplina = @codigo
+);
+GO
+CREATE PROCEDURE sp_buscar_nota_aluno @avaliacaoCodigo INT, @codigoDisciplina INT, @codigoMatricula INT
+AS
+BEGIN
+    DECLARE @codigo INT
+	DECLARE @cont INT
+
+    SELECT @codigo = codigo
+    FROM notaParcial
+    WHERE avaliacaoCodigo = @avaliacaoCodigo AND codigoDisciplina = @codigoDisciplina AND codigoMatricula = @codigoMatricula
+
+    IF @codigo IS NULL
+    BEGIN
+		SELECT @cont = (ISNULL(COUNT(codigo), 0) + 1) FROM notaParcial
+        INSERT INTO notaParcial
+        VALUES (@avaliacaoCodigo, GETDATE(), 0.0, @codigoDisciplina, @codigoMatricula, @cont)
+    END
+END
+GO
 INSERT INTO periodoMatricula (periodo_matricula_inicio, periodo_matricula_fim)VALUES 
     ('2024-01-01', '2025-01-01')
 GO
@@ -1981,3 +2009,21 @@ VALUES
 (59, 9, 1001, '2024-04-03', 1, 0, 1, 0),
 (60, 10, 1002, '2024-04-04', 0, 1, 0, 1);
 GO
+
+SELECT * FROM avaliacao
+SELECT * FROM v_periodoMatricula
+SELECT * FROM matriculaDisciplina
+
+SELECT * FROM v_periodoMatricula
+SELECT codigoDisciplina FROM matriculaDisciplina WHERE codigoMatricula = 1
+
+DELETE FROM matricula WHERE codigoAluno = '09129892031' AND dataMatricula >= '2024-01-01' AND dataMatricula <= '2025-01-01' 
+
+SELECT * FROM notaParcial
+
+INSERT INTO avaliacao VALUES
+(1, 'P1', 0.3, 1001),
+(2, 'P2', 0.5, 1001),
+(3, 'T', 0.2, 1001)
+
+SELECT * FROM fn_matricula_atual(5)

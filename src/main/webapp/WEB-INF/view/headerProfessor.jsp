@@ -20,6 +20,7 @@
         <ul class="nav nav-pills">
             <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="conteudo">Conteudo</a></li>
             <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="listaChamada">Lista de Chamada</a></li>
+            <li class="nav-item"><a class="nav-link px-2 link-body-emphasis" href="nota">Manter Notas</a></li>
         </ul>
   	</header>
   </div>

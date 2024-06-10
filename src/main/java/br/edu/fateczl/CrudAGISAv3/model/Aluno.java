@@ -32,6 +32,8 @@ import lombok.Setter;
 
 @NamedNativeQuery(name = "Aluno.findByRA", query = "SELECT * FROM fn_consultar_aluno_RA(?1)", resultClass = Aluno.class)
 
+@NamedNativeQuery(name = "Aluno.findByCPF", query = "SELECT * FROM aluno WHERE CPF=?1", resultClass = Aluno.class)
+
 @NamedNativeQuery(name = "Aluno.findconstruirCabecalhoHistorico", query = "SELECT * FROM fn_cabecalho_historico(?1)", resultClass = Aluno.class)
 
 @NamedStoredProcedureQuery(name = "Aluno.sp_iud_aluno", procedureName = "sp_iud_aluno ", parameters = {

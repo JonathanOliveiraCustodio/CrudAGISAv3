@@ -12,8 +12,10 @@ import br.edu.fateczl.CrudAGISAv3.model.MatriculaDisciplinaId;
 public interface IDisciplinaMatriculadaRepotitory extends JpaRepository<MatriculaDisciplina, MatriculaDisciplinaId> {
 
 	@Query(name = "MatriculaDisciplina.findBuscarCodigoDisciplinasMatriculadas", nativeQuery = true)
-    List<Integer> findBuscarCodigoDisciplinasMatriculadas(int codigoMatricula);
+    List<MatriculaDisciplina> findBuscarCodigoDisciplinasMatriculadas(int codigoMatricula);
 	
+	@Query(name = "MatriculaDisciplina.findBuscarCodigoMatriculas", nativeQuery = true)
+    List<MatriculaDisciplina> findBuscarCodigoMatriculas(int codigoDisciplina);
 	
 	@Procedure(name = "MatriculaDisciplina.sp_matricular_disciplina")
 	String sp_matricular_disciplina(

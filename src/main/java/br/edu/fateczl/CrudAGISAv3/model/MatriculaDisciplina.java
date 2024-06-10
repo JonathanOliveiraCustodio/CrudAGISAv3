@@ -13,6 +13,7 @@ import jakarta.persistence.NamedStoredProcedureQuery;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,9 @@ import lombok.ToString;
 @Entity
 @Table(name = "matriculaDisciplina")
 
-@NamedNativeQuery(name = "MatriculaDisciplina.findBuscarCodigoDisciplinasMatriculadas", query = "SELECT codigoDisciplina FROM matriculaDisciplina WHERE CodigoMatricula = ?1", resultClass = MatriculaDisciplina.class)
+@NamedNativeQuery(name = "MatriculaDisciplina.findBuscarCodigoDisciplinasMatriculadas", query = "SELECT * FROM matriculaDisciplina WHERE codigoMatricula = ?1", resultClass = MatriculaDisciplina.class)
 
+@NamedNativeQuery(name = "MatriculaDisciplina.findBuscarCodigoMatriculas", query = "SELECT * FROM matriculaDisciplina WHERE codigoDisciplina = ?1 AND situacao='Em Curso'", resultClass = MatriculaDisciplina.class)
 
 @NamedStoredProcedureQuery(name = "matriculaDisciplina.sp_matricular_disciplina", procedureName = "sp_matricular_disciplina", parameters = {
 		@StoredProcedureParameter(mode = ParameterMode.IN, name = "codigoDisciplina", type = Integer.class),
@@ -56,5 +58,17 @@ public class MatriculaDisciplina {
 	
 	@Column(name = "totalFaltas",  nullable = true)
 	private Integer totalFaltas;
+	
+	@Transient
+	private Matricula matricula;
+	
+	@Transient
+	private NotaParcial N1;
+	
+	@Transient
+	private NotaParcial N2;
+	
+	@Transient
+	private NotaParcial N3;
 
 }

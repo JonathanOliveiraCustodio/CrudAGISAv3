@@ -19,6 +19,9 @@ public interface IMatriculaRepository extends JpaRepository<Matricula, Integer> 
 	@Query(name = "Matricula.findBuscarMatriculaAtual", nativeQuery = true)
 	Matricula findBuscarMatriculaAtualAluno(int codigo);
 	
+	@Query(name = "Matricula.findMatriculaPorCodigo", nativeQuery = true)
+	Matricula findMatriculaPorCodigo(int codigo);
+	
 	@Query(name = "Matricula.findAllBuscarMatricula", nativeQuery = true)
 	Matricula findAllBuscarMatricula(int RA);
 		
@@ -26,8 +29,8 @@ public interface IMatriculaRepository extends JpaRepository<Matricula, Integer> 
     List<Telefone> findAllTelefones(String cpfAluno);
 	
 	
-	@Query(name = "Matricula.findAllBuscarMatricula", nativeQuery = true)
-	Matricula findBuscarMatriculaAluno(Aluno a, Date dataMatriculaInicio, Date dataMatriculaFim);
+	@Query(name = "Matricula.findBuscarMatriculaAluno", nativeQuery = true)
+	Matricula findBuscarMatriculaAluno(String CPF, Date dataMatriculaInicio, Date dataMatriculaFim);
 
 	@Procedure(name = "MatriculaDisciplina.sp_nova_matricula")
 	String sp_nova_matricula(
